@@ -1,0 +1,137 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="touch-icon" href="./style/favicon.png">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="manifest" href="./style/manifest.json" crossorigin="use-credentials">
+
+    <link rel="icon" href="./style/favicon.svg">
+    <link rel="shortcut icon" href="./style/favicon.png">
+    <link rel="stylesheet" href="./style/css/variables.css">
+    <link rel="stylesheet" href="./style/css/general.css">
+    <link rel="stylesheet" href="./style/css/chrome.css">
+
+    <link rel="stylesheet" href="./style/FontAwesome/css/font-awesome.css">
+    <link rel="stylesheet" href="./style/fonts/fonts.css">
+
+    <script src="./style/axios.min.js"></script>
+    <script src="./style/vue@2.7.14"></script>
+    <!-- <script src="./style/pdf.mjs"></script> -->
+    <!-- <script src="./style/pdf.min.js"></script> -->
+    <script src="https://unpkg.com/vue-multiselect@2.1.6"></script>
+    <link rel="stylesheet" href="https://unpkg.com/vue-multiselect@2.1.6/dist/vue-multiselect.min.css">
+
+    <script>
+        function resizeIframe(obj) {
+            obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 'px';
+        }
+    </script>
+</head>
+
+<body class="sidebar-visible no-js">
+
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <input type="checkbox" v-model="showSidebar" id="sidebar-toggle-anchor" class="hidden">
+
+        <nav id="sidebar" class="sidebar">
+            <div class="sidebar-scrollbox">
+                <div class="fixed-header">
+                    <multiselect ref="multiselect" v-model="selectColumn" track-by="value" label="name" select-label=""
+                        deselect-label="" :options="allColumns" @input="loadColumn" @open="handleSelectOpen">
+                        <template slot="singleLabel" slot-scope="{ option }">
+                            {{ option.name }}
+                        </template>
+                    </multiselect>
+                </div>
+                <div>
+                    <ol class="chapter" v-for="item in menus" :key="item.menuName">
+                        <div v-if="item.subMenu">
+                            <li class="chapter-item" :class="item.expanded?'expanded':''"
+                                @click="item.expanded = !item.expanded">
+                                <a href="#">{{item.menuName}}</a>
+                                <a class="toggle">
+                                    <div>❱</div>
+                                </a>
+                            </li>
+                            <li>
+                                <ol class="section">
+                                    <li class="chapter-item" v-for="subMenu in item.subMenu" :key="subMenu.menuName">
+                                        <a :href="'#'+currentSelectColumn+'/'+item.menuName+'/'+subMenu.menuName"
+                                            @click="(event)=>renderContent(subMenu,event)"
+                                            :class="subMenu.active?'active':''">{{subMenu.menuName}}</a>
+                                    </li>
+                                </ol>
+                            </li>
+                        </div>
+                        <div v-else>
+                            <li class="chapter-item">
+                                <a :href="'#'+currentSelectColumn+'/'+item.menuName" @click="renderContent(item)"
+                                    :class="item.active?'active':''">{{item.menuName}}</a>
+                            </li>
+                        </div>
+                    </ol>
+                </div>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+            <div class="page">
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                    </div>
+                    <div class="menu-title">{{removNameExt(title)}}</div>
+
+                    <div class="right-buttons">
+                    </div>
+                </div>
+            </div>
+            <div id="content" class="content">
+                <main id="iframe-container">
+                    <iframe v-if="renderPdf" :src="pdfSrc+'#toolbar=0&navpanes=0f#view=fit'" frameborder="0"
+                        style="min-height:100vh;width:100%" scrolling="no" onload="resizeIframe(this)"></iframe>
+                    <iframe v-else :srcdoc="htmlSrcDoc" frameborder="0" scrolling="no" ref="htmlIframe"
+                        onload="resizeIframe(this)"></iframe>
+                </main>
+
+                <nav class="nav-wrapper" aria-label="Page navigation">
+                    <a rel="prev" class="mobile-nav-chapters previous" @click="prevMenu" title="Previous chapter"
+                        aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next prefetch" class="mobile-nav-chapters next" @click="nextMenu" title="Next chapter"
+                        aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                    <div style="clear: both"></div>
+                </nav>
+            </div>
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                <a rel="prev" class="nav-chapters previous" @click="prevMenu" title="Previous chapter"
+                    aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+
+                <a rel="next prefetch" class="nav-chapters next" @click="nextMenu" title="Next chapter"
+                    aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </nav>
+
+        </div>
+
+        <script src="./style/core.js"></script>
+
+    </div>
+</body>
+
+</html>
