@@ -11,7 +11,7 @@
     // alist的token 路径 /@manage/settings/other中的 令牌
     "token": "alist-409b4058-c887-486b-a1ed-xxxxxxxx",
     // alist的地址
-    "columApiServer": "http://192.168.123.8:5244
+    "columApiServer": "http://192.168.123.8:5244"
 }
 ```
 
