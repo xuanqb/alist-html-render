@@ -1,18 +1,25 @@
-
 const excludedExtensions = ['.mp3', '.m4a', '.md', 'images', 'MP3', 'videos']
+
 function getNameExt(name) {
     return name.endsWith('.html') ? 'html' : 'pdf'
 }
+
+let count = 0
+
 function replaceName(name) {
     return name.replace('[天下无鱼][shikey.com]', '').replace('[一手资源：666java.com]', '').replace('_For_group_share', '');
 }
+
 function removNameExt(fileName) {
     return fileName.replace(/\.[^/.]+$/, "");
 }
+
 const currentProgressStr = 'currentProgress'
+
 function saveCurrentProgress(path) {
     localStorage.setItem(currentProgressStr, path)
 }
+
 function getCurrentProgress() {
     return localStorage.getItem(currentProgressStr)
 }
@@ -20,12 +27,15 @@ function getCurrentProgress() {
 function getColumnConfig() {
     return localStorage.getItem('columnConfig')
 }
+
 function setColumnConfig(config) {
     localStorage.setItem('columnConfig', config)
 }
+
 function clearColumnConfig() {
     localStorage.removeItem('columnConfig')
 }
+
 function scrollIntoView(target) {
     // const target = document.querySelector('.active')
     if (target) {
@@ -70,9 +80,7 @@ new Vue({
             }
         }
     },
-    computed: {
-
-    },
+    computed: {},
     created() {
         // 初始化配置
         this.initConfig('请输入配置')
@@ -98,10 +106,14 @@ new Vue({
                 tempConfigStr = prompt(str, '')
                 setColumnConfig(tempConfigStr)
             }
-            const tempConfigJson = JSON.parse(tempConfigStr)
+            let tempConfigJson;
+            try {
+                tempConfigJson = JSON.parse(tempConfigStr)
+            } catch (e) {
+            }
             if (!(tempConfigJson && tempConfigJson['columPath'])) {
                 clearColumnConfig()
-                return this.initConfig('配置不正确，请重新输入')
+                return (count < 10) && (count++, this.initConfig('配置不正确，请重新输入'))
             }
             this.columPath = tempConfigJson['columPath']
             this.token = tempConfigJson['token']
@@ -244,7 +256,7 @@ new Vue({
                     columnName = column.replace('专案课', '专栏课')
                     columnName = columnName.replace('（完结）', '')
                     columnName = columnName.replace('(完结)', '')
-                    this.allColumns.push({ name: columnName.substring(columnName.indexOf('专栏课-') + 4), value: column })
+                    this.allColumns.push({name: columnName.substring(columnName.indexOf('专栏课-') + 4), value: column})
 
                 });
                 this.loadColumByUrl();
@@ -284,7 +296,7 @@ new Vue({
                         const subMenu = [];
                         const menuName = obj.name;
                         if (excludedExtensions.some(ext => menuName.endsWith(ext))) continue
-                        let menuObj = { menuName: menuName, expanded: true }
+                        let menuObj = {menuName: menuName, expanded: true}
                         if (!obj.is_dir) {
                             if (menuName.endsWith('.pdf') && notLoadPdf) continue
                             // 是否保存pdf
