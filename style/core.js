@@ -117,9 +117,6 @@ new Vue({
                 clearColumnConfig()
                 return (count < 10) && (count++, this.initConfig('配置不正确，请重新输入'))
             }
-            if (this.isFirstLoad) {
-                alert('配置成功，点击左侧下拉框选择专栏')
-            }
             this.columPath = tempConfigJson['columPath']
             this.token = tempConfigJson['token']
             this.columApiServer = tempConfigJson['columApiServer']
@@ -209,21 +206,34 @@ new Vue({
                 this.showSidebar = !this.showSidebar
             }
         },
+        showSelect() {
+            this.$refs['multiselect'].isOpen = true
+            this.showSidebar = true
+        },
         // 加载url对应的专栏
         loadColumByUrl() {
             if (!location.hash) {
                 const currentProgress = getCurrentProgress()
-                if (!currentProgress) return
+                if (!currentProgress) {
+                    this.showSelect()
+                    return
+                }
                 location.hash = currentProgress
             }
             this.urlParams = decodeURIComponent(location.hash).substring(1).split('/')
             if (this.urlParams.length < 1) {
                 const currentProgress = getCurrentProgress()
-                if (!currentProgress) return
+                if (!currentProgress) {
+                    this.showSelect()
+                    return
+                }
                 this.urlParams = currentProgress.split('/')
             }
             const selectColumnValue = this.urlParams[0]
-            if (!selectColumnValue) return
+            if (!selectColumnValue) {
+                this.showSelect()
+                return
+            }
             this.selectColumn = this.allColumns.find(v => v.value == selectColumnValue)
             if (!this.selectColumn) return
             this.currentSelectColumn = this.selectColumn.value
@@ -263,7 +273,7 @@ new Vue({
                     columnName = column.replace('专案课', '专栏课')
                     columnName = columnName.replace('（完结）', '')
                     columnName = columnName.replace('(完结)', '')
-                    this.allColumns.push({name: columnName.substring(columnName.indexOf('专栏课-') + 4), value: column})
+                    this.allColumns.push({ name: columnName.substring(columnName.indexOf('专栏课-') + 4), value: column })
 
                 });
                 this.loadColumByUrl();
@@ -303,7 +313,7 @@ new Vue({
                         const subMenu = [];
                         const menuName = obj.name;
                         if (excludedExtensions.some(ext => menuName.endsWith(ext))) continue
-                        let menuObj = {menuName: menuName, expanded: true}
+                        let menuObj = { menuName: menuName, expanded: true }
                         if (!obj.is_dir) {
                             if (menuName.endsWith('.pdf') && notLoadPdf) continue
                             // 是否保存pdf

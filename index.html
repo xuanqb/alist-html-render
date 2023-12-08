@@ -10,7 +10,7 @@
     <meta name="theme-color" content="#ffffff">
     <link rel="manifest" href="./style/manifest.json" crossorigin="use-credentials">
     <!-- try fix http err  -->
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+    <!-- <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" /> -->
 
     <link rel="icon" href="./style/favicon.svg">
     <link rel="shortcut icon" href="./style/favicon.png">
@@ -27,15 +27,22 @@
     <!-- <script src="./style/pdf.min.js"></script> -->
     <script src="https://unpkg.com/vue-multiselect@2.1.6"></script>
     <link rel="stylesheet" href="https://unpkg.com/vue-multiselect@2.1.6/dist/vue-multiselect.min.css">
-<!--    <script>-->
-<!--        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };-->
-<!--    </script>-->
-<!--    <script defer src="/_vercel/insights/script.js"></script>-->
+    <!--    <script>-->
+    <!--        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };-->
+    <!--    </script>-->
+    <!--    <script defer src="/_vercel/insights/script.js"></script>-->
 
 
     <script>
         function resizeIframe(obj) {
-            obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 'px';
+            const view = obj.contentDocument.querySelector('#viewer')
+            if (view) {
+                obj.contentWindow.PDFViewerApplication.eventBus.on('pagerender', function (data) {
+                    obj.style.height = view.scrollHeight + 51 + 'px';
+                });
+            } else {
+                obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 'px';
+            }
         }
     </script>
 </head>
@@ -104,8 +111,8 @@
             </div>
             <div id="content" class="content">
                 <main id="iframe-container">
-                    <iframe v-if="renderPdf" :src="pdfSrc+'#toolbar=0&navpanes=0f#view=fit'" frameborder="0"
-                        style="min-height:100vh;width:100%" scrolling="no" onload="resizeIframe(this)"></iframe>
+                    <iframe v-if="renderPdf" :src="'/pdfjs/web/viewer.html?file='+pdfSrc"
+                        onload="resizeIframe(this)"></iframe>
                     <iframe v-else :srcdoc="htmlSrcDoc" frameborder="0" scrolling="no" ref="htmlIframe"
                         onload="resizeIframe(this)"></iframe>
                 </main>
