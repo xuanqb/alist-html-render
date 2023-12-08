@@ -57,7 +57,8 @@
             <div class="sidebar-scrollbox">
                 <div class="fixed-header">
                     <multiselect ref="multiselect" v-model="selectColumn" track-by="value" label="name" select-label=""
-                        deselect-label="" :options="allColumns" @input="loadColumn" @open="handleSelectOpen">
+                        deselect-label="" :options="allColumns" @input="loadColumn" :custom-label="customLabel"
+                        @open="handleSelectOpen">
                         <template slot="singleLabel" slot-scope="{ option }">
                             {{ option.name }}
                         </template>

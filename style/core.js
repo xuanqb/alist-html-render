@@ -39,15 +39,7 @@ function clearColumnConfig() {
 function scrollIntoView(target) {
     // const target = document.querySelector('.active')
     if (target) {
-        if (target.scrollIntoView) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'nearest',
-                inline: 'nearest'
-            });
-        } else {
-            target.scrollIntoViewIfNeeded(true);
-        }
+        target.scrollIntoViewIfNeeded(true);
     }
 }
 
@@ -101,6 +93,9 @@ new Vue({
         window.removeEventListener('resize', this.showOrHideSideBar);
     },
     methods: {
+        customLabel({ name, isEnd }) {
+            return `${isEnd ? '' : '未完 - '}${name}`
+        },
         initConfig(str) {
             let tempConfigStr = getColumnConfig()
             if (!tempConfigStr) {
@@ -271,9 +266,13 @@ new Vue({
                     }
                     // this.allColumns.push({ label: column, value: column })
                     columnName = column.replace('专案课', '专栏课')
-                    columnName = columnName.replace('（完结）', '')
-                    columnName = columnName.replace('(完结)', '')
-                    this.allColumns.push({ name: columnName.substring(columnName.indexOf('专栏课-') + 4), value: column })
+                    let end = true
+                    if (!columnName.includes('完结')) {
+                        end = false
+                    } else {
+                        columnName = columnName.replace('（完结）', '').replace('(完结)', '').replace('(完结）', '')
+                    }
+                    this.allColumns.push({ name: columnName.includes('专栏课-') ? columnName.substring(columnName.indexOf('专栏课-') + 4) : columnName, value: column, isEnd: end })
 
                 });
                 this.loadColumByUrl();
