@@ -71,7 +71,8 @@ new Vue({
         showSidebar: false,
         isMobile: false,
         sortMenus: {},
-        beforeSubMenu: null
+        beforeSubMenu: null,
+        isFirstLoad: false
     },
     watch: {
         'selectColumn.name': (n, o) => {
@@ -104,6 +105,7 @@ new Vue({
             let tempConfigStr = getColumnConfig()
             if (!tempConfigStr) {
                 tempConfigStr = prompt(str, '')
+                this.isFirstLoad = true
                 setColumnConfig(tempConfigStr)
             }
             let tempConfigJson;
@@ -114,6 +116,9 @@ new Vue({
             if (!(tempConfigJson && tempConfigJson['columPath'])) {
                 clearColumnConfig()
                 return (count < 10) && (count++, this.initConfig('配置不正确，请重新输入'))
+            }
+            if (this.isFirstLoad) {
+                alert('配置成功，点击左侧下拉框选择专栏')
             }
             this.columPath = tempConfigJson['columPath']
             this.token = tempConfigJson['token']
