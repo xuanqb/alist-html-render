@@ -188,7 +188,9 @@ new Vue({
                         Authorization: this.token
                     },
                 }).then(res => {
-                    this.htmlSrcDoc = res.data.replaceAll('user-select', 'user-select-fuck').replaceAll('overflow: hidden', 'overflow: 1111;').replaceAll('-webkit-box-orient: vertical', '')
+                    this.htmlSrcDoc = res.data
+                        .replaceAll('user-select', 'user-select-fuck').replaceAll('overflow: hidden', 'overflow: 1111;')
+                        .replaceAll('-webkit-box-orient:vertical', '').replaceAll('-webkit-box-orient: vertical', '')
                     this.$refs['htmlIframe'].style.height = '50px'
                     scrollIntoView(document.querySelector('.active'))
                 }).catch(err => {
