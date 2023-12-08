@@ -180,7 +180,9 @@ new Vue({
                     this.renderPdf = true
                     this.pdfSrc = URL.createObjectURL(res.data);
                     scrollIntoView(document.querySelector('.active'))
-                })
+                }).catch(err => {
+                    this.htmlSrcDoc = "加载失败"
+                });
             } else {
                 axios({
                     method: 'get',
