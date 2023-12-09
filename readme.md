@@ -1,5 +1,5 @@
 # 简介
-带侧边栏的alist网页预览，前端样式参考[mdbook](https://github.com/rust-lang/mdBook)实现，后端使用alist
+带侧边栏的alist网页预览，支持预览`html > md > pdf`，前端样式参考[mdbook](https://github.com/rust-lang/mdBook)实现，后端使用alist
 代码写的比较烂，有时间再重构
 # 配置
 进入网页需要在弹出框输入alist相关配置 `json`格式，不要有注释
