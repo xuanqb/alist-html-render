@@ -334,6 +334,10 @@ new Vue({
                     if (!res.data.data.content) return
                     // 优先加载
                     const prioritizeFile = prioritizeFileExtensions(res.data.data.content.map(o => o.name))
+                    let collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+                    res.data.data.content.sort((a, b) => {
+                        return collator.compare(a.name, b.name)
+                    })
                     for (const obj of res.data.data.content) {
                         const subMenu = [];
                         const menuName = obj.name;
