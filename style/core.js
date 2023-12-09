@@ -2,9 +2,10 @@ Vue.component('multiselect', window.VueMultiselect.default)
 new Vue({
     el: '#body-container',
     data: {
-        htmlSrcDoc: "",
+        htmlSrcDoc: '',
         pdfSrc: '',
-        renderPdf: false,
+        mdDoc: '',
+        renderType: 'html',
         columPath: '',
         token: '',
         columApiServer: '',
@@ -125,7 +126,9 @@ new Vue({
             window.scrollTo({
                 top: 0
             });
-            if (subMenu.type === 'pdf') {
+            const renderType = subMenu.type
+            this.renderType = renderType
+            if (renderType === 'pdf') {
                 this.loadNode(subMenu).then(res => {
                     this.renderPdf = true
                     this.pdfSrc = res;
@@ -133,10 +136,32 @@ new Vue({
                     // 缓存下一节
                     this.loadNode(this.getMenuNode(1))
                 })
-            } else {
+            } else if (renderType === 'html') {
                 this.loadNode(subMenu).then((res) => {
                     this.htmlSrcDoc = res
                     this.$refs['htmlIframe'].style.height = '50px'
+                    scrollIntoView(document.querySelector('.active'))
+                    // 缓存下一节
+                    this.loadNode(this.getMenuNode(1))
+                })
+            } else if (renderType === 'md') {
+                this.loadNode(subMenu).then((res) => {
+                    const customRenderer = new marked.Renderer();
+                    customRenderer.image = function (href, title, text) {
+                        let imgSrc = null
+                        if (href.startsWith('http')) {
+                            imgSrc = href
+                        } else {
+                            imgSrc = _.columApiServer + '/d' + _.currentMenu.path.replace(_.currentMenu.menuName, '') + '/' + href
+                        }
+                        // 返回自定义的 HTML 输出
+                        return `<img src="${imgSrc}" title="${title}" alt="${text}" style="max-width:100%;" />`;
+                    };
+                    // 将自定义的 renderer 对象传递给 marked 函数
+                    marked.setOptions({
+                        renderer: customRenderer,
+                    });
+                    this.mdDoc = marked.parse(res);
                     scrollIntoView(document.querySelector('.active'))
                     // 缓存下一节
                     this.loadNode(this.getMenuNode(1))
@@ -307,15 +332,15 @@ new Vue({
             this.getFsList(`/${column}`)
                 .then(async (res) => {
                     if (!res.data.data.content) return
-                    // 是否保存pdf
-                    const notLoadPdf = res.data.data.content.some(sub => sub.name.endsWith('html'))
+                    // 优先加载
+                    const prioritizeFile = prioritizeFileExtensions(res.data.data.content.map(o => o.name))
                     for (const obj of res.data.data.content) {
                         const subMenu = [];
                         const menuName = obj.name;
                         if (excludedExtensions.some(ext => menuName.endsWith(ext))) continue
                         let menuObj = { menuName: menuName, expanded: true }
                         if (!obj.is_dir) {
-                            if (menuName.endsWith('.pdf') && notLoadPdf) continue
+                            if (!menuName.endsWith(prioritizeFile)) continue
                             // 是否保存pdf
                             menuObj = Object.assign({}, menuObj, {
                                 index: index++,
@@ -328,10 +353,10 @@ new Vue({
                             menuObj.subMenu = subMenu;
                             const subRes = await this.getFsList(`/${column}/${menuName}`);
                             // 是否保存pdf
-                            const notLoadPdf = subRes.data.data.content.some(sub => sub.name.endsWith('html'))
+                            const prioritizeFile = prioritizeFileExtensions(subRes.data.data.content.map(o => o.name))
                             subRes.data.data.content?.forEach((subObj) => {
                                 const subMenuName = subObj.name;
-                                if (subMenuName.endsWith('.pdf') && notLoadPdf) return
+                                if (!subMenuName.endsWith(prioritizeFile)) return
                                 if (excludedExtensions.some(ext => subMenuName.endsWith(ext))) return
                                 const menu = {
                                     menuName: replaceName(subMenuName),
@@ -368,10 +393,10 @@ new Vue({
     },
 });
 
-const excludedExtensions = ['.mp3', '.mp4', '.m4a', '.md', 'images', 'MP3', 'videos']
+const excludedExtensions = ['.mp3', '.mp4', '.m4a', 'images', 'MP3', 'videos']
 
-function getNameExt(name) {
-    return name.endsWith('.html') ? 'html' : 'pdf'
+function getNameExt(filename) {
+    return filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2);
 }
 
 let count = 0
@@ -411,4 +436,19 @@ function scrollIntoView(target) {
     if (target) {
         target.scrollIntoViewIfNeeded(true);
     }
+}
+
+function prioritizeFileExtensions(fileList) {
+    // 加载优先级，靠前的优先展示
+    const priorityOrder = ['html', 'md', 'pdf'];
+
+    for (const extension of priorityOrder) {
+        const matchingFile = fileList.find(file => file.endsWith(`.${extension}`));
+        if (matchingFile) {
+            return extension;
+        }
+    }
+
+    // 如果没有匹配的文件，可以根据需要返回一个默认值或者抛出错误等
+    return null;
 }

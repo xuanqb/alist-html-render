@@ -11,6 +11,7 @@
     <link rel="manifest" href="./style/manifest.json" crossorigin="use-credentials">
     <!-- try fix http err  -->
     <!-- <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" /> -->
+    <meta name="referrer" content="no-referrer">
 
     <link rel="icon" href="./style/favicon.svg">
     <link rel="shortcut icon" href="./style/favicon.png">
@@ -25,6 +26,7 @@
     <script src="./style/vue@2.7.14"></script>
     <!-- <script src="./style/pdf.mjs"></script> -->
     <!-- <script src="./style/pdf.min.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://unpkg.com/vue-multiselect@2.1.6"></script>
     <link rel="stylesheet" href="https://unpkg.com/vue-multiselect@2.1.6/dist/vue-multiselect.min.css">
     <!--    <script>-->
@@ -144,12 +146,13 @@
             </div>
             <div id="content" class="content">
                 <main id="iframe-container">
-                    <iframe v-if="renderPdf" :src="'/pdfjs/web/viewer.html?file='+pdfSrc"
+                    <iframe v-show="renderType=='pdf'" :src="'/pdfjs/web/viewer.html?file='+pdfSrc"
                         onload="resizeIframe(this)"></iframe>
-                    <iframe v-else :srcdoc="htmlSrcDoc" frameborder="0" scrolling="no" ref="htmlIframe"
-                        onload="resizeIframe(this)"></iframe>
+                    <iframe v-show="renderType=='html'" :srcdoc="htmlSrcDoc" frameborder="0" scrolling="no"
+                        ref="htmlIframe" onload="resizeIframe(this)"></iframe>
+                    <div v-show="renderType=='md'" ref="mdRender" class="mdRender" onload="resizeIframe(this)"
+                        v-html="mdDoc"></div>
                 </main>
-
                 <nav class="nav-wrapper" aria-label="Page navigation">
                     <a rel="prev" class="mobile-nav-chapters previous" @click="prevMenu" v-show="getMenuNode(-1)"
                         title="上一节" aria-label="Previous chapter" aria-keyshortcuts="Left">
