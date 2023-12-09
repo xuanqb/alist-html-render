@@ -198,7 +198,7 @@ new Vue({
                 let currentNodeContent = this.nodeContentMap[key]
                 if (currentNodeContent && currentNodeContent.loaded) {
                     return resolve(currentNodeContent.data)
-                } else if (currentNodeContent && !currentNodeContent.loaded) {
+                } else if (currentNodeContent && !currentNodeContent.loaded) {  
                     // 有另外一个线程再加载，延时递归
                     return setTimeout(() => {
                         this.loadNode(menuNode)
@@ -233,7 +233,7 @@ new Vue({
                     }).then(res => {
                         this.nodeContentMap[key].data = res.data
                             .replaceAll('user-select', 'user-select-fuck')
-                            .replaceAll('overflow: hidden', 'overflow: 1111')
+                            .replaceAll('overflow: hidden', 'overflow: auto')
                             .replaceAll('-webkit-box-orient:vertical', '').replaceAll('-webkit-box-orient: vertical', '')
                         this.nodeContentMap[key].loaded = true
                         resolve(this.nodeContentMap[key].data)
