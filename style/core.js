@@ -65,7 +65,8 @@ new Vue({
         sortMenus: {},
         beforeSubMenu: null,
         isFirstLoad: false,
-        oldInnerWidthWidth: window.innerWidth
+        oldInnerWidthWidth: window.innerWidth,
+        nodeContentMap: {}
     },
     watch: {
         'selectColumn.name': (n, o) => {
@@ -171,38 +172,76 @@ new Vue({
                 behavior: 'smooth'  // 平滑滚动效果
             });
             if (subMenu.type === 'pdf') {
-                axios({
-                    method: 'get',
-                    url: `${this.columApiServer}/d` + subMenu.path,
-                    headers: {
-                        Authorization: this.token
-                    },
-                    responseType: 'blob'
-                }).then(res => {
+                this.loadNode(subMenu).then(res => {
                     this.renderPdf = true
-                    this.pdfSrc = URL.createObjectURL(res.data);
+                    this.pdfSrc = res;
                     scrollIntoView(document.querySelector('.active'))
-                }).catch(err => {
-                    this.htmlSrcDoc = "加载失败"
-                });
+                    // 缓存下一节
+                    this.loadNode(this.getMenuNode(1))
+                })
             } else {
-                axios({
-                    method: 'get',
-                    url: `${this.columApiServer}/d` + subMenu.path,
-                    headers: {
-                        Authorization: this.token
-                    },
-                }).then(res => {
-                    this.htmlSrcDoc = res.data
-                        .replaceAll('user-select', 'user-select-fuck')
-                        .replaceAll('overflow: hidden', 'overflow: 1111')
-                        .replaceAll('-webkit-box-orient:vertical', '').replaceAll('-webkit-box-orient: vertical', '')
+                this.loadNode(subMenu).then((res) => {
+                    this.htmlSrcDoc = res
                     this.$refs['htmlIframe'].style.height = '50px'
                     scrollIntoView(document.querySelector('.active'))
-                }).catch(err => {
-                    this.htmlSrcDoc = "加载失败"
-                });
+                    // 缓存下一节
+                    this.loadNode(this.getMenuNode(1))
+                })
             }
+        },
+        // 加载专栏
+        loadNode(menuNode) {
+            return new Promise((resolve, reject) => {
+                if (!menuNode) reject('章节不能为空')
+                const key = menuNode.path
+                const menuName = menuNode.menuName
+                let currentNodeContent = this.nodeContentMap[key]
+                if (currentNodeContent && currentNodeContent.loaded) {
+                    return resolve(currentNodeContent.data)
+                } else if (currentNodeContent && !currentNodeContent.loaded) {
+                    // 有另外一个线程再加载，延时递归
+                    return setTimeout(() => {
+                        this.loadNode(menuNode)
+                            .then(resolve)  // 递归结束后 resolve 当前 Promise
+                            .catch(reject); // 如果有错误，reject
+                    }, 200)
+                } else {
+                    this.nodeContentMap[key] = { loaded: false, data: null }
+                }
+                if (menuNode.type === 'pdf') {
+                    axios({
+                        method: 'get',
+                        url: `${this.columApiServer}/d` + menuNode.path,
+                        headers: {
+                            Authorization: this.token
+                        },
+                        responseType: 'blob'
+                    }).then(res => {
+                        this.nodeContentMap[key].data = URL.createObjectURL(res.data);
+                        this.nodeContentMap[key].loaded = true
+                        resolve(this.nodeContentMap[key].data)
+                    }).catch(err => {
+                        alert(menuName + '加载失败')
+                    });
+                } else {
+                    axios({
+                        method: 'get',
+                        url: `${this.columApiServer}/d` + menuNode.path,
+                        headers: {
+                            Authorization: this.token
+                        },
+                    }).then(res => {
+                        this.nodeContentMap[key].data = res.data
+                            .replaceAll('user-select', 'user-select-fuck')
+                            .replaceAll('overflow: hidden', 'overflow: 1111')
+                            .replaceAll('-webkit-box-orient:vertical', '').replaceAll('-webkit-box-orient: vertical', '')
+                        this.nodeContentMap[key].loaded = true
+                        resolve(this.nodeContentMap[key].data)
+                    }).catch(err => {
+                        alert(menuName + '加载失败')
+                    });
+                }
+            })
         },
         showOrHideSideBar() {
             if (this.oldInnerWidthWidth !== window.innerWidth || !this.checkMobile()) {
