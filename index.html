@@ -43,8 +43,13 @@
         function resizeIframe(obj) {
             const view = obj.contentDocument?.querySelector('#viewer')
             if (view) {
-                obj.contentWindow.PDFViewerApplication.eventBus.on('pagerender', function (data) {
+                obj.contentWindow.PDFViewerApplication.eventBus.on('pagesloaded', function (data) {
                     obj.style.height = view.scrollHeight + 51 + 'px';
+                    const scrollY = localStorage.getItem('scrollY')
+                    if (scrollY) {
+                        window.scrollTo({ top: parseInt(scrollY) })
+                        localStorage.setItem('scrollY', 0)
+                    }
                 });
             } else {
                 obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 'px';
@@ -53,6 +58,10 @@
                 // 删除评论中的展开
                 obj.contentWindow.document.documentElement.querySelectorAll('._2r3UB1GX_0').forEach(e => e.remove())
                 obj.contentWindow.document.documentElement.querySelectorAll('[class^="CommentItem_more_"]').forEach(e => e.remove())
+                const scrollY = localStorage.getItem('scrollY')
+                if (scrollY) {
+                    window.scrollTo({ top: parseInt(scrollY) })
+                }
             }
             // 绑定点击事件
             obj.contentDocument.addEventListener('touchmove', () => {
@@ -61,7 +70,12 @@
             obj.contentDocument.onclick = function () {
                 closeSidebar()
             };
+
         }
+        // 绑定滚动事件
+        document.addEventListener('scroll', () => {
+            localStorage.setItem('scrollY', window.scrollY)
+        });
     </script>
 </head>
 
@@ -162,7 +176,7 @@
 
         </div>
 
-        <script src="./style/core.js?v=2"></script>
+        <script src="./style/core.js?v=3"></script>
 
     </div>
 </body>

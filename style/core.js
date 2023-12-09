@@ -168,8 +168,7 @@ new Vue({
             this.htmlSrcDoc = "加载中"
             this.title = subMenu.menuName
             window.scrollTo({
-                top: 0,
-                behavior: 'smooth'  // 平滑滚动效果
+                top: 0
             });
             if (subMenu.type === 'pdf') {
                 this.loadNode(subMenu).then(res => {
@@ -198,7 +197,7 @@ new Vue({
                 let currentNodeContent = this.nodeContentMap[key]
                 if (currentNodeContent && currentNodeContent.loaded) {
                     return resolve(currentNodeContent.data)
-                } else if (currentNodeContent && !currentNodeContent.loaded) {  
+                } else if (currentNodeContent && !currentNodeContent.loaded) {
                     // 有另外一个线程再加载，延时递归
                     return setTimeout(() => {
                         this.loadNode(menuNode)
