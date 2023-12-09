@@ -119,24 +119,24 @@
                 </main>
 
                 <nav class="nav-wrapper" aria-label="Page navigation">
-                    <a rel="prev" class="mobile-nav-chapters previous" @click="prevMenu" title="Previous chapter"
-                        aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" class="mobile-nav-chapters previous" @click="prevMenu" v-show="getMenuNode(-1)"
+                        title="上一节" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
-                    <a rel="next prefetch" class="mobile-nav-chapters next" @click="nextMenu" title="Next chapter"
-                        aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" class="mobile-nav-chapters next" @click="nextMenu" v-show="getMenuNode(1)"
+                        title="下一节" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                     <div style="clear: both"></div>
                 </nav>
             </div>
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                <a rel="prev" class="nav-chapters previous" @click="prevMenu" title="Previous chapter"
+                <a rel="prev" class="nav-chapters previous" @click="prevMenu" v-show="getMenuNode(-1)" title="上一节"
                     aria-label="Previous chapter" aria-keyshortcuts="Left">
                     <i class="fa fa-angle-left"></i>
                 </a>
 
-                <a rel="next prefetch" class="nav-chapters next" @click="nextMenu" title="Next chapter"
+                <a rel="next prefetch" class="nav-chapters next" @click="nextMenu" v-show="getMenuNode(1)" title="下一节"
                     aria-label="Next chapter" aria-keyshortcuts="Right">
                     <i class="fa fa-angle-right"></i>
                 </a>

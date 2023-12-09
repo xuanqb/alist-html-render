@@ -64,7 +64,8 @@ new Vue({
         isMobile: false,
         sortMenus: {},
         beforeSubMenu: null,
-        isFirstLoad: false
+        isFirstLoad: false,
+        oldInnerWidthWidth: window.innerWidth
     },
     watch: {
         'selectColumn.name': (n, o) => {
@@ -135,13 +136,17 @@ new Vue({
                 scrollIntoView(this.$refs.multiselect.$el.querySelector('.multiselect__option--selected'))
             });
         },
-        prevOrNextMenu(i) {
+        getMenuNode(i) {
+            if (!this.currentMenu) return
             const index = this.currentMenu.index
-            const prevNode = this.sortMenus[index + i]
-            if (!prevNode) return
-            path = prevNode.path.replace(this.columPath + "/", '')
+            return this.sortMenus[index + i]
+        },
+        prevOrNextMenu(i) {
+            const menuNode = this.getMenuNode(i)
+            if (!menuNode) return
+            path = menuNode.path.replace(this.columPath + "/", '')
             window.location.hash = `#${path}`
-            this.renderContent(prevNode)
+            this.renderContent(menuNode)
         },
         prevMenu() {
             this.prevOrNextMenu(-1)
@@ -189,7 +194,8 @@ new Vue({
                     },
                 }).then(res => {
                     this.htmlSrcDoc = res.data
-                        .replaceAll('user-select', 'user-select-fuck').replaceAll('overflow: hidden', 'overflow: 1111;')
+                        .replaceAll('user-select', 'user-select-fuck')
+                        .replaceAll('overflow: hidden', 'overflow: 1111')
                         .replaceAll('-webkit-box-orient:vertical', '').replaceAll('-webkit-box-orient: vertical', '')
                     this.$refs['htmlIframe'].style.height = '50px'
                     scrollIntoView(document.querySelector('.active'))
@@ -199,8 +205,9 @@ new Vue({
             }
         },
         showOrHideSideBar() {
-            if (!this.checkMobile()) {
-                this.showSidebar = !this.showSidebar
+            if (this.oldInnerWidthWidth !== window.innerWidth || !this.checkMobile()) {
+                this.showSidebar = !this.checkMobile()
+                this.oldInnerWidthWidth = window.innerWidth
             }
         },
         showSelect() {
@@ -280,7 +287,6 @@ new Vue({
                 this.loadColumByUrl();
 
             }).catch(err => {
-                debugger
                 // 清空配置
                 clearColumnConfig()
             })

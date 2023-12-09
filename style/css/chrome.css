@@ -173,7 +173,7 @@ a>.hljs {
 
 .nav-chapters:hover {
     text-decoration: none;
-    background-color: var(--theme-hover);
+    /* background-color: var(--theme-hover); */
     transition: background-color 0.15s, color 0.15s;
 }
 
