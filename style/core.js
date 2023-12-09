@@ -393,7 +393,7 @@ new Vue({
     },
 });
 
-const excludedExtensions = ['.mp3', '.mp4', '.m4a', 'images', 'MP3', 'videos']
+const excludedExtensions = ['.mp3', '.mp4', '.m4a', 'images', 'MP3', 'videos', 'img']
 
 function getNameExt(filename) {
     return filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2);
