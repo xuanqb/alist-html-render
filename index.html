@@ -34,6 +34,12 @@
 
 
     <script>
+        // 移动端滑动右侧iframe时关闭左侧菜单栏
+        function closeSidebar() {
+            if (_.checkMobile()) {
+                _.showSidebar = false
+            }
+        }
         function resizeIframe(obj) {
             const view = obj.contentDocument.querySelector('#viewer')
             if (view) {
@@ -43,6 +49,13 @@
             } else {
                 obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 'px';
             }
+            // 绑定点击事件
+            obj.contentDocument.addEventListener('touchmove', () => {
+                closeSidebar()
+            });
+            obj.contentDocument.onclick = function () {
+                closeSidebar()
+            };
         }
     </script>
 </head>
