@@ -157,8 +157,8 @@ a>.hljs {
     text-decoration: none;
 
     position: fixed;
-    top: 0;
-    bottom: 0;
+    top: 500px;
+    bottom: 500px;
     margin: 0;
     max-width: 150px;
     min-width: 90px;

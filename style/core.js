@@ -1,4 +1,4 @@
-const excludedExtensions = ['.mp3', '.m4a', '.md', 'images', 'MP3', 'videos']
+const excludedExtensions = ['.mp3', '.mp4', '.m4a', '.md', 'images', 'MP3', 'videos']
 
 function getNameExt(name) {
     return name.endsWith('.html') ? 'html' : 'pdf'
