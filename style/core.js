@@ -1,48 +1,3 @@
-const excludedExtensions = ['.mp3', '.mp4', '.m4a', '.md', 'images', 'MP3', 'videos']
-
-function getNameExt(name) {
-    return name.endsWith('.html') ? 'html' : 'pdf'
-}
-
-let count = 0
-
-function replaceName(name) {
-    return name.replace('[天下无鱼][shikey.com]', '').replace('[一手资源：666java.com]', '').replace('_For_group_share', '');
-}
-
-function removNameExt(fileName) {
-    return fileName.replace(/\.[^/.]+$/, "");
-}
-
-const currentProgressStr = 'currentProgress'
-
-function saveCurrentProgress(path) {
-    localStorage.setItem(currentProgressStr, path)
-}
-
-function getCurrentProgress() {
-    return localStorage.getItem(currentProgressStr)
-}
-
-function getColumnConfig() {
-    return localStorage.getItem('columnConfig')
-}
-
-function setColumnConfig(config) {
-    localStorage.setItem('columnConfig', config)
-}
-
-function clearColumnConfig() {
-    localStorage.removeItem('columnConfig')
-}
-
-function scrollIntoView(target) {
-    // const target = document.querySelector('.active')
-    if (target) {
-        target.scrollIntoViewIfNeeded(true);
-    }
-}
-
 Vue.component('multiselect', window.VueMultiselect.default)
 new Vue({
     el: '#body-container',
@@ -96,7 +51,7 @@ new Vue({
     },
     methods: {
         customLabel({ name, isEnd }) {
-            return `${isEnd ? '' : '未完 - '}${name}`
+            return `${name}`
         },
         initConfig(str) {
             let tempConfigStr = getColumnConfig()
@@ -412,3 +367,48 @@ new Vue({
         }
     },
 });
+
+const excludedExtensions = ['.mp3', '.mp4', '.m4a', '.md', 'images', 'MP3', 'videos']
+
+function getNameExt(name) {
+    return name.endsWith('.html') ? 'html' : 'pdf'
+}
+
+let count = 0
+
+function replaceName(name) {
+    return name.replace('[天下无鱼][shikey.com]', '').replace('[一手资源：666java.com]', '').replace('_For_group_share', '');
+}
+
+function removNameExt(fileName) {
+    return fileName.replace(/\.[^/.]+$/, "");
+}
+
+const currentProgressStr = 'currentProgress'
+
+function saveCurrentProgress(path) {
+    localStorage.setItem(currentProgressStr, path)
+}
+
+function getCurrentProgress() {
+    return localStorage.getItem(currentProgressStr)
+}
+
+function getColumnConfig() {
+    return localStorage.getItem('columnConfig')
+}
+
+function setColumnConfig(config) {
+    localStorage.setItem('columnConfig', config)
+}
+
+function clearColumnConfig() {
+    localStorage.removeItem('columnConfig')
+}
+
+function scrollIntoView(target) {
+    // const target = document.querySelector('.active')
+    if (target) {
+        target.scrollIntoViewIfNeeded(true);
+    }
+}
