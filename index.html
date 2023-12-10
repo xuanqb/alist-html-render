@@ -21,12 +21,19 @@
 
     <link rel="stylesheet" href="./style/FontAwesome/css/font-awesome.css">
     <link rel="stylesheet" href="./style/fonts/fonts.css">
+    <link rel="stylesheet" href="./style/highlight.css">
+
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/default.min.css"> -->
+    <script src="./style/clipboard.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked-highlight/lib/index.umd.js"></script>
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/dark.min.css"> -->
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/shell.min.js"></script>
+
 
     <script src="./style/axios.min.js"></script>
     <script src="./style/vue@2.7.14"></script>
-    <!-- <script src="./style/pdf.mjs"></script> -->
-    <!-- <script src="./style/pdf.min.js"></script> -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://unpkg.com/vue-multiselect@2.1.6"></script>
     <link rel="stylesheet" href="https://unpkg.com/vue-multiselect@2.1.6/dist/vue-multiselect.min.css">
     <!--    <script>-->
@@ -66,9 +73,9 @@
                 }
             }
             // 绑定点击事件
-            obj.contentDocument.addEventListener('touchmove', () => {
-                closeSidebar()
-            });
+            // obj.contentDocument.addEventListener('touchmove', () => {
+            //     closeSidebar()
+            // });
             obj.contentDocument.onclick = function () {
                 closeSidebar()
             };
@@ -132,6 +139,7 @@
 
         <div id="page-wrapper" class="page-wrapper">
             <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
                 <div id="menu-bar" class="menu-bar sticky">
                     <div class="left-buttons">
                         <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor">
@@ -139,32 +147,32 @@
                         </label>
                     </div>
                     <div class="menu-title">{{removNameExt(title)}}</div>
-
                     <div class="right-buttons">
                     </div>
                 </div>
+                <div id="content" class="content" :class="renderType=='md'?'content-md':''">
+                    <main ref="mdRender" class="mdRender" v-html="mdDoc" v-if="renderType=='md'" @click="closeSidebar">
+                    </main>
+                    <main id="iframe-container" v-else>
+                        <iframe v-show="renderType=='pdf'" :src="'/pdfjs/web/viewer.html?file='+pdfSrc"
+                            onload="resizeIframe(this)"></iframe>
+                        <iframe v-show="renderType=='html'" :srcdoc="htmlSrcDoc" frameborder="0" scrolling="no"
+                            ref="htmlIframe" onload="resizeIframe(this)"></iframe>
+                    </main>
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <a rel="prev" class="mobile-nav-chapters previous" @click="prevMenu" v-show="getMenuNode(-1)"
+                            title="上一节" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <i class="fa fa-angle-left"></i>
+                        </a>
+                        <a rel="next prefetch" class="mobile-nav-chapters next" @click="nextMenu"
+                            v-show="getMenuNode(1)" title="下一节" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <i class="fa fa-angle-right"></i>
+                        </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
             </div>
-            <div id="content" class="content">
-                <main id="iframe-container">
-                    <iframe v-show="renderType=='pdf'" :src="'/pdfjs/web/viewer.html?file='+pdfSrc"
-                        onload="resizeIframe(this)"></iframe>
-                    <iframe v-show="renderType=='html'" :srcdoc="htmlSrcDoc" frameborder="0" scrolling="no"
-                        ref="htmlIframe" onload="resizeIframe(this)"></iframe>
-                    <div v-show="renderType=='md'" ref="mdRender" class="mdRender" onload="resizeIframe(this)"
-                        v-html="mdDoc"></div>
-                </main>
-                <nav class="nav-wrapper" aria-label="Page navigation">
-                    <a rel="prev" class="mobile-nav-chapters previous" @click="prevMenu" v-show="getMenuNode(-1)"
-                        title="上一节" aria-label="Previous chapter" aria-keyshortcuts="Left">
-                        <i class="fa fa-angle-left"></i>
-                    </a>
-                    <a rel="next prefetch" class="mobile-nav-chapters next" @click="nextMenu" v-show="getMenuNode(1)"
-                        title="下一节" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
-                    </a>
-                    <div style="clear: both"></div>
-                </nav>
-            </div>
+
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 <a rel="prev" class="nav-chapters previous" @click="prevMenu" v-show="getMenuNode(-1)" title="上一节"
                     aria-label="Previous chapter" aria-keyshortcuts="Left">
@@ -176,10 +184,9 @@
                     <i class="fa fa-angle-right"></i>
                 </a>
             </nav>
-
         </div>
 
-        <script src="./style/core.js?v=4"></script>
+        <script src="./style/core.js?v=5"></script>
 
     </div>
 </body>

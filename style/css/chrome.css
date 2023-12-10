@@ -54,6 +54,7 @@ a>.hljs {
     position: -webkit-sticky;
     position: sticky;
     top: 0 !important;
+    margin-left: 0px;
 }
 
 #menu-bar-hover-placeholder {
@@ -157,8 +158,8 @@ a>.hljs {
     text-decoration: none;
 
     position: fixed;
-    top: 500px;
-    bottom: 500px;
+    top: 0px;
+    bottom: 0px;
     margin: 0;
     max-width: 150px;
     min-width: 90px;
@@ -173,7 +174,7 @@ a>.hljs {
 
 .nav-chapters:hover {
     text-decoration: none;
-    /* background-color: var(--theme-hover); */
+    background-color: var(--theme-hover);
     transition: background-color 0.15s, color 0.15s;
 }
 

@@ -145,23 +145,10 @@ new Vue({
                     this.loadNode(this.getMenuNode(1))
                 })
             } else if (renderType === 'md') {
+
                 this.loadNode(subMenu).then((res) => {
-                    const customRenderer = new marked.Renderer();
-                    customRenderer.image = function (href, title, text) {
-                        let imgSrc = null
-                        if (href.startsWith('http')) {
-                            imgSrc = href
-                        } else {
-                            imgSrc = _.columApiServer + '/d' + _.currentMenu.path.replace(_.currentMenu.menuName, '') + '/' + href
-                        }
-                        // 返回自定义的 HTML 输出
-                        return `<img src="${imgSrc}" title="${title}" alt="${text}" style="max-width:100%;" />`;
-                    };
-                    // 将自定义的 renderer 对象传递给 marked 函数
-                    marked.setOptions({
-                        renderer: customRenderer,
-                    });
-                    this.mdDoc = marked.parse(res);
+                    this.mdDoc = markdownRenderer.markdown.parse(res);
+                    clipboard()
                     scrollIntoView(document.querySelector('.active'))
                     // 缓存下一节
                     this.loadNode(this.getMenuNode(1))
@@ -444,15 +431,102 @@ function scrollIntoView(target) {
 
 function prioritizeFileExtensions(fileList) {
     // 加载优先级，靠前的优先展示
-    const priorityOrder = ['html', 'md', 'pdf'];
-
+    const priorityOrder = ['md', 'html', 'pdf'];
     for (const extension of priorityOrder) {
         const matchingFile = fileList.find(file => file.endsWith(`.${extension}`));
         if (matchingFile) {
             return extension;
         }
     }
-
     // 如果没有匹配的文件，可以根据需要返回一个默认值或者抛出错误等
     return null;
 }
+
+// 代码复制
+function playground_text(playground, hidden = true) {
+    let code_block = playground.querySelector("code");
+
+    if (window.ace && code_block.classList.contains("editable")) {
+        let editor = window.ace.edit(code_block);
+        return editor.getValue();
+    } else if (hidden) {
+        return code_block.textContent;
+    } else {
+        return code_block.innerText;
+    }
+}
+function clipboard() {
+    var clipButtons = document.querySelectorAll('.clip-button');
+
+    function hideTooltip(elem) {
+        elem.firstChild.innerText = "";
+        elem.className = 'fa fa-copy clip-button';
+    }
+
+    function showTooltip(elem, msg) {
+        elem.firstChild.innerText = msg;
+        elem.className = 'fa fa-copy tooltipped';
+    }
+
+    var clipboardSnippets = new ClipboardJS('.clip-button', {
+        text: function (trigger) {
+            hideTooltip(trigger);
+            let playground = trigger.closest("pre");
+            return playground_text(playground, false);
+        }
+    });
+
+    Array.from(clipButtons).forEach(function (clipButton) {
+        clipButton.addEventListener('mouseout', function (e) {
+            hideTooltip(e.currentTarget);
+        });
+    });
+
+    clipboardSnippets.on('success', function (e) {
+        e.clearSelection();
+        showTooltip(e.trigger, "Copied!");
+    });
+
+    clipboardSnippets.on('error', function (e) {
+        showTooltip(e.trigger, "Clipboard error!");
+    });
+};
+
+class MarkdownRenderer {
+    constructor() {
+        this.markdown = new marked.Marked();
+        this.renderer = new marked.Renderer();
+
+        // Customize image rendering
+        this.renderer.image = this.imageRenderer.bind(this);
+
+        // Customize code block rendering
+        this.renderer.code = this.codeRenderer.bind(this);
+
+        // Set the custom renderer for marked
+        this.markdown.setOptions({
+            renderer: this.renderer,
+        });
+    }
+
+    imageRenderer(href, title, text) {
+        let imgSrc = null;
+
+        if (href.startsWith('http')) {
+            imgSrc = href;
+        } else {
+            imgSrc = _.columApiServer + '/d' + _.currentMenu.path.replace(_.currentMenu.menuName, '') + '/' + href;
+        }
+
+        return `<div style="text-align: center;"><img src="${imgSrc}" title="${title ? title : ''}" alt="${text ? text : ''}" style="max-height:200px;"/></div>`;
+    }
+
+    codeRenderer(code, infostring, escaped) {
+        const [lang, ...attrsString] = infostring.split(' | ');
+        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+
+        return `<pre><div class="buttons"><button class="fa fa-copy clip-button" title="Copy to clipboard" aria-label="Copy to clipboard"><i class="tooltiptext"></i> </button></div><code class="hljs language-${lang}">${hljs.highlight(code, { language }).value}</code></pre>`;
+    }
+
+}
+const markdownRenderer = new MarkdownRenderer()
