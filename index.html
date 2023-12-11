@@ -99,12 +99,13 @@
         <nav id="sidebar" class="sidebar">
             <div class="sidebar-scrollbox">
                 <div class="fixed-header">
-                    <multiselect ref="multiselect" v-model="selectColumn" track-by="value" label="name" select-label=""
-                        deselect-label="" :options="allColumns" @input="loadColumn" :custom-label="customLabel"
+                    <multiselect ref="multiselect" v-model="selectColumn" :options="allColumnsGroupByViewingStatus"
+                        group-values="columns" group-label="status" :group-select="true" :max-height="500"
+                        track-by="value" label="name" select-label="" deselect-label="" @input="loadColumn"
                         @open="handleSelectOpen">
-                        <template slot="singleLabel" slot-scope="{ option }">
+                        <!-- <template slot="singleLabel" slot-scope="{ option }">
                             {{ option.name }}
-                        </template>
+                        </template> -->
                     </multiselect>
                 </div>
                 <div>
@@ -153,8 +154,7 @@
                     </div>
                 </div>
                 <div id="content" class="content" :class="renderType=='md'?'content-md':''">
-                    <main ref="mdRender" class="mdRender" v-html="mdDoc" v-if="renderType=='md'"
-                        @click="closeSidebar">
+                    <main ref="mdRender" class="mdRender" v-html="mdDoc" v-if="renderType=='md'" @click="closeSidebar">
                     </main>
                     <main id="iframe-container" v-else>
                         <iframe v-show="renderType=='pdf'" :src="'/pdfjs/web/viewer.html?file='+pdfSrc"
@@ -189,7 +189,7 @@
             </nav>
         </div>
 
-        <script src="./style/core.js?v=6"></script>
+        <script src="./style/core.js?v=7"></script>
 
     </div>
 </body>

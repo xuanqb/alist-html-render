@@ -12,7 +12,10 @@ new Vue({
         menus: [],
         urlParams: [],
         title: '',
+        // 所有的专栏
         allColumns: [],
+        // 专栏根据观看状态分组
+        allColumnsGroupByViewingStatus: [],
         selectColumn: '',
         currentMenu: null,
         currentSelectColumn: '',
@@ -105,12 +108,24 @@ new Vue({
                 // 保存最近一次观看的专栏的章节
                 saveCurrentProgress(newHash)
                 // 保存每个专栏最近一次观看的章节
-                debugger
-                let cloumuMenuProgress = JSON.parse(localStorage.getItem(cloumuMenuProgressKey)) || {}
-                cloumuMenuProgress[this.currentSelectColumn] = newHash
+                let cloumuMenuProgress = this.getCloumuMenuProgress()
+                // 默认为未看完
+                let completed = false
+                // 根据章节索引计算是否已看完
+                if (this.currentMenu && !this.getMenuNode(1)) {
+                    debugger
+                    completed = true
+                }
+                cloumuMenuProgress[this.currentSelectColumn] = { path: newHash, completed: completed }
                 localStorage.setItem(cloumuMenuProgressKey, JSON.stringify(cloumuMenuProgress))
+                // 重新触发专栏分组
+                this.columnGroup()
             }
         },
+        getCloumuMenuProgress() {
+            return JSON.parse(localStorage.getItem(cloumuMenuProgressKey)) || {}
+        }
+        ,
         handleSelectOpen() {
             this.$nextTick(() => {
                 scrollIntoView(this.$refs.multiselect.$el.querySelector('.multiselect__option--selected'))
@@ -157,7 +172,7 @@ new Vue({
                     this.pdfSrc = res;
                     scrollIntoView(document.querySelector('.active'))
                     // 缓存下一节
-                    this.loadNode(this.getMenuNode(1))
+                    this.loadNextMenu()
                 })
             } else if (renderType === 'html') {
                 this.loadNode(subMenu).then((res) => {
@@ -165,7 +180,7 @@ new Vue({
                     this.$refs['htmlIframe'].style.height = '50px'
                     scrollIntoView(document.querySelector('.active'))
                     // 缓存下一节
-                    this.loadNode(this.getMenuNode(1))
+                    this.loadNextMenu()
                 })
             } else if (renderType === 'md') {
                 this.loadNode(subMenu).then((res) => {
@@ -173,8 +188,14 @@ new Vue({
                     clipboard()
                     scrollIntoView(document.querySelector('.active'))
                     // 缓存下一节
-                    this.loadNode(this.getMenuNode(1))
+                    this.loadNextMenu()
                 })
+            }
+        },
+        loadNextMenu() {
+            const nextMenu = this.getMenuNode(1)
+            if (nextMenu) {
+                this.loadNode(nextMenu)
             }
         },
         // 加载专栏
@@ -270,14 +291,17 @@ new Vue({
             this.currentSelectColumn = this.selectColumn.value
             this.loadMenus(this.selectColumn.value)
         },
-        loadColumn() {
+        loadColumn(obj) {
+            // 专栏分组之后点击 组名也会触发，需要忽略此次选择
+            if (!obj || obj instanceof Array) return
             if (this.selectColumn) {
                 this.menus = []
+                this.currentMenu = null
                 // 当前专栏最近看的章节
-                let cloumuMenuProgress = JSON.parse(localStorage.getItem(cloumuMenuProgressKey)) || {}
+                let cloumuMenuProgress = this.getCloumuMenuProgress()
                 const currentColumnLookedMenu = cloumuMenuProgress[this.selectColumn.value] || null
                 if (currentColumnLookedMenu) {
-                    window.location.hash = currentColumnLookedMenu
+                    window.location.hash = currentColumnLookedMenu.path
                     this.loadColumByUrl()
                     return
                 }
@@ -317,13 +341,28 @@ new Vue({
                         columnName = columnName.replace('（完结）', '').replace('(完结)', '').replace('(完结）', '')
                     }
                     this.allColumns.push({ name: columnName.includes('专栏课-') ? columnName.substring(columnName.indexOf('专栏课-') + 4) : columnName, value: column, isEnd: end })
-
                 });
+                // 专栏分组
+                this.columnGroup()
                 this.loadColumByUrl();
 
             }).catch(err => {
                 // 清空配置
                 clearColumnConfig()
+            })
+        },
+        columnGroup() {
+            const cloumuMenuProgress = this.getCloumuMenuProgress()
+            this.allColumnsGroupByViewingStatus = columnGroupBy(this.allColumns, column => {
+                const cloumuProgress = cloumuMenuProgress[column.value]
+                if (cloumuProgress) {
+                    if (cloumuProgress.completed) {
+                        return columnViewingStatus.completed
+                    }
+                    return columnViewingStatus.watching
+                } else {
+                    return columnViewingStatus.notStarted
+                }
             })
         },
         getFsList(path) {
@@ -438,6 +477,11 @@ new Vue({
 });
 
 const excludedExtensions = ['.mp3', '.mp4', '.m4a', 'images', 'MP3', 'videos', 'img']
+const columnViewingStatus = {
+    'watching': '正在看',
+    'notStarted': '未观看',
+    'completed': '已看完'
+}
 // 各专栏观看进度
 const cloumuMenuProgressKey = 'cloumuMenuProgress'
 
@@ -598,4 +642,24 @@ function showMdImage(event) {
 
     // image.click();
     viewer.show();
+}
+
+// 数组数据分组
+function columnGroupBy(array, keyFunction) {
+    let tempArray = array.reduce(function (result, current) {
+        const key = keyFunction(current);
+        // 如果 result 中没有 key 对应的数组，创建一个空数组
+        if (!result[key]) {
+            result[key] = [];
+        }
+        // 将当前元素添加到对应的数组中
+        result[key].push(current);
+
+        return result;
+    }, {});
+    return Object.keys(columnViewingStatus).filter(status => tempArray[columnViewingStatus[status]]).map(status => {
+        return {
+            status: columnViewingStatus[status], columns: tempArray[columnViewingStatus[status]]
+        }
+    })
 }
