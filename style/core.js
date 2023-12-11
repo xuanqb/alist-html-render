@@ -22,7 +22,10 @@ new Vue({
         beforeSubMenu: null,
         isFirstLoad: false,
         oldInnerWidthWidth: window.innerWidth,
-        nodeContentMap: {}
+        // 菜单和内容的映射
+        menuContentMap: {},
+        // 专栏和菜单的映射
+        columnMenuMap: {}
     },
     watch: {
         'selectColumn.name': (n, o) => {
@@ -45,6 +48,18 @@ new Vue({
     },
     mounted() {
         this.showOrHideSideBar()
+        window.showMarkedImage = function (e, href) {
+            let el = e.target
+            let rfs =
+                el.requestFullScreen ||
+                el.webkitRequestFullScreen ||
+                el.mozRequestFullScreen ||
+                el.msRequestFullScreen
+            if (rfs) {
+                rfs.call(el)
+            }
+            console.log(href)
+        }
     },
     beforeDestroy() {
         window.removeEventListener('hashchange', this.handleHashChange);
@@ -86,7 +101,12 @@ new Vue({
         handleHashChange() {
             // 获取新的 hash 值
             const newHash = window.location.hash;
-            if (newHash) saveCurrentProgress(newHash)
+            if (newHash) {
+                // 保存最近一次观看的专栏的章节
+                saveCurrentProgress(newHash)
+                // 保存每个专栏最近一次观看的章节
+                localStorage.setItem(this.currentSelectColumn, newHash)
+            }
         },
         handleSelectOpen() {
             this.$nextTick(() => {
@@ -145,7 +165,6 @@ new Vue({
                     this.loadNode(this.getMenuNode(1))
                 })
             } else if (renderType === 'md') {
-
                 this.loadNode(subMenu).then((res) => {
                     this.mdDoc = markdownRenderer.markdown.parse(res);
                     clipboard()
@@ -161,10 +180,10 @@ new Vue({
                 if (!menuNode) reject('章节不能为空')
                 const key = menuNode.path
                 const menuName = menuNode.menuName
-                let currentNodeContent = this.nodeContentMap[key]
-                if (currentNodeContent && currentNodeContent.loaded) {
-                    return resolve(currentNodeContent.data)
-                } else if (currentNodeContent && !currentNodeContent.loaded) {
+                let currentMenuContent = this.menuContentMap[key]
+                if (currentMenuContent && currentMenuContent.loaded) {
+                    return resolve(currentMenuContent.data)
+                } else if (currentMenuContent && !currentMenuContent.loaded) {
                     // 有另外一个线程再加载，延时递归
                     return setTimeout(() => {
                         this.loadNode(menuNode)
@@ -172,7 +191,7 @@ new Vue({
                             .catch(reject); // 如果有错误，reject
                     }, 200)
                 } else {
-                    this.nodeContentMap[key] = { loaded: false, data: null }
+                    this.menuContentMap[key] = { loaded: false, data: null }
                 }
                 if (menuNode.type === 'pdf') {
                     axios({
@@ -183,9 +202,9 @@ new Vue({
                         },
                         responseType: 'blob'
                     }).then(res => {
-                        this.nodeContentMap[key].data = URL.createObjectURL(res.data);
-                        this.nodeContentMap[key].loaded = true
-                        resolve(this.nodeContentMap[key].data)
+                        this.menuContentMap[key].data = URL.createObjectURL(res.data);
+                        this.menuContentMap[key].loaded = true
+                        resolve(this.menuContentMap[key].data)
                     }).catch(err => {
                         alert(menuName + '加载失败')
                     });
@@ -197,12 +216,12 @@ new Vue({
                             Authorization: this.token
                         },
                     }).then(res => {
-                        this.nodeContentMap[key].data = res.data
+                        this.menuContentMap[key].data = res.data
                             .replaceAll('user-select', 'user-select-fuck')
                             .replaceAll('overflow: hidden', 'overflow: auto')
                             .replaceAll('-webkit-box-orient:vertical', '').replaceAll('-webkit-box-orient: vertical', '')
-                        this.nodeContentMap[key].loaded = true
-                        resolve(this.nodeContentMap[key].data)
+                        this.menuContentMap[key].loaded = true
+                        resolve(this.menuContentMap[key].data)
                     }).catch(err => {
                         alert(menuName + '加载失败')
                     });
@@ -251,7 +270,14 @@ new Vue({
         loadColumn() {
             if (this.selectColumn) {
                 this.menus = []
-                window.location.hash = `#${this.selectColumn.value}`
+                // 当前专栏最近看的章节
+                let currentColumnLookedMenu = localStorage.getItem(this.selectColumn.value)
+                if (currentColumnLookedMenu) {
+                    window.location.hash = currentColumnLookedMenu
+                    this.loadColumByUrl()
+                    return
+                }
+                window.location.hash = currentColumnLookedMenu
                 this.currentSelectColumn = this.selectColumn.value
                 this.loadMenus(this.selectColumn.value)
             }
@@ -316,70 +342,92 @@ new Vue({
         loadMenus(column) {
             let index = 0;
             this.sortMenus = {}
-            this.getFsList(`/${column}`)
-                .then(async (res) => {
-                    if (!res.data.data.content) return
-                    // 优先加载
-                    const prioritizeFile = prioritizeFileExtensions(res.data.data.content.map(o => o.name))
-                    let collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-                    res.data.data.content.sort((a, b) => {
-                        return collator.compare(a.name, b.name)
-                    })
-                    for (const obj of res.data.data.content) {
-                        const subMenu = [];
-                        const menuName = obj.name;
-                        if (excludedExtensions.some(ext => menuName.endsWith(ext))) continue
-                        let menuObj = { menuName: menuName, expanded: true }
-                        if (!obj.is_dir) {
-                            if (!menuName.endsWith(prioritizeFile)) continue
-                            // 是否保存pdf
-                            menuObj = Object.assign({}, menuObj, {
-                                index: index++,
-                                type: getNameExt(menuName),
-                                menuName: replaceName(menuName),
-                                path: this.columPath + `/${this.selectColumn.value}/${menuName}`
-                            })
-                            this.sortMenus[menuObj.index] = menuObj
-                        } else {
-                            menuObj.subMenu = subMenu;
-                            const subRes = await this.getFsList(`/${column}/${menuName}`);
-                            // 是否保存pdf
-                            const prioritizeFile = prioritizeFileExtensions(subRes.data.data.content.map(o => o.name))
-                            subRes.data.data.content?.forEach((subObj) => {
-                                const subMenuName = subObj.name;
-                                if (!subMenuName.endsWith(prioritizeFile)) return
-                                if (excludedExtensions.some(ext => subMenuName.endsWith(ext))) return
-                                const menu = {
-                                    menuName: replaceName(subMenuName),
-                                    type: getNameExt(subMenuName),
-                                    path: this.columPath + `/${this.selectColumn.value}/${menuName}/${subMenuName}`,
-                                    index: index++
-                                }
-                                this.sortMenus[menu.index] = menu
-                                subMenu.push(menu);
-                            });
-                        }
-                        if (menuName.startsWith('开篇词')) {
-                            errIndex = menuObj.index
-                            menuObj.index = -1
-                            delete this.sortMenus[errIndex]
-                            this.sortMenus[menuObj.index] = menuObj
-                            this.menus.unshift(menuObj)
-                        } else {
-                            this.menus.push(menuObj);
-                        }
-                    }
-                    // 页面加载完成再根据url加载专栏
-                    // this.loadColumByUrl();
-                    const [_, menuName, subMenuName] = this.urlParams;
-                    const menu = this.menus.find(m => m.menuName === menuName);
-                    const subMenu = menu?.subMenu?.find(s => s.menuName === subMenuName);
-
-                    if (subMenu || menu) {
-                        this.renderContent(subMenu || menu, null);
-                    }
-
+            this.menus = []
+            const currentSelectColumn = this.currentSelectColumn
+            let currentColumnMenu = this.columnMenuMap[currentSelectColumn]
+            if (currentColumnMenu) {
+                this.sortMenus = currentColumnMenu.sortMenus
+                this.menus = currentColumnMenu.menus
+                this.renderContentByUrl()
+            }
+            this.getFsList(`/${column}`).then(async (res) => {
+                currentColumnMenu = { menus: [], sortMenus: {} }
+                if (!res.data.data.content) return
+                // 优先加载
+                const prioritizeFile = prioritizeFileExtensions(res.data.data.content.map(o => o.name))
+                let collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+                res.data.data.content.sort((a, b) => {
+                    return collator.compare(a.name, b.name)
                 })
+                for (const obj of res.data.data.content) {
+                    const subMenu = [];
+                    const menuName = obj.name;
+                    if (excludedExtensions.some(ext => menuName.endsWith(ext))) continue
+                    let menuObj = { menuName: menuName, expanded: true }
+                    if (!obj.is_dir) {
+                        if (!menuName.endsWith(prioritizeFile)) continue
+                        // 是否保存pdf
+                        menuObj = Object.assign({}, menuObj, {
+                            index: index++,
+                            type: getNameExt(menuName),
+                            menuName: replaceName(menuName),
+                            sourceMenuName: menuName,
+                            parentPath: this.columPath + `/${this.selectColumn.value}`,
+                            path: this.columPath + `/${this.selectColumn.value}/${menuName}`
+                        })
+                        currentColumnMenu.sortMenus[menuObj.index] = menuObj
+                    } else {
+                        menuObj.subMenu = subMenu;
+                        const subRes = await this.getFsList(`/${column}/${menuName}`);
+                        // 是否保存pdf
+                        const prioritizeFile = prioritizeFileExtensions(subRes.data.data.content.map(o => o.name))
+                        subRes.data.data.content?.forEach((subObj) => {
+                            const subMenuName = subObj.name;
+                            if (!subMenuName.endsWith(prioritizeFile)) return
+                            if (excludedExtensions.some(ext => subMenuName.endsWith(ext))) return
+                            const menu = {
+                                menuName: replaceName(subMenuName),
+                                sourceMenuName: menuName,
+                                parentPath: this.columPath + `/${this.selectColumn.value}/${menuName}`,
+                                type: getNameExt(subMenuName),
+                                path: this.columPath + `/${this.selectColumn.value}/${menuName}/${subMenuName}`,
+                                index: index++
+                            }
+                            currentColumnMenu.sortMenus[menu.index] = menu
+                            subMenu.push(menu);
+                        });
+                    }
+                    if (menuName.startsWith('开篇词')) {
+                        errIndex = menuObj.index
+                        menuObj.index = -1
+                        delete currentColumnMenu.sortMenus[errIndex]
+                        currentColumnMenu.sortMenus[menuObj.index] = menuObj
+                        currentColumnMenu.menus.unshift(menuObj)
+                    } else {
+                        currentColumnMenu.menus.push(menuObj);
+                    }
+                    if (currentSelectColumn == this.currentSelectColumn) {
+                        this.menus = currentColumnMenu.menus
+                    }
+                }
+                if (currentSelectColumn == this.currentSelectColumn) {
+                    this.menus = currentColumnMenu.menus
+                    this.sortMenus = currentColumnMenu.sortMenus
+                }
+                this.columnMenuMap[currentSelectColumn] = currentColumnMenu
+                this.renderContentByUrl()
+            })
+        },
+        renderContentByUrl() {
+            // 页面加载完成再根据url加载专栏
+            // this.loadColumByUrl();
+            const [_, menuName, subMenuName] = this.urlParams;
+            const menu = this.menus.find(m => m.menuName === menuName);
+            const subMenu = menu?.subMenu?.find(s => s.menuName === subMenuName);
+
+            if (subMenu || menu) {
+                this.renderContent(subMenu || menu, null);
+            }
         }
     },
 });
@@ -511,14 +559,13 @@ class MarkdownRenderer {
 
     imageRenderer(href, title, text) {
         let imgSrc = null;
-
         if (href.startsWith('http')) {
             imgSrc = href;
         } else {
-            imgSrc = _.columApiServer + '/d' + _.currentMenu.path.replace(_.currentMenu.menuName, '') + '/' + href;
+            imgSrc = _.columApiServer + '/d' + _.currentMenu.parentPath + '/' + href;
         }
-
-        return `<div style="text-align: center;"><img src="${imgSrc}" title="${title ? title : ''}" alt="${text ? text : ''}" style="max-height:200px;"/></div>`;
+        // onClick = "showMarkedImage(event, '${imgSrc}')"
+        return `<div style="text-align: center;"><img src="${imgSrc}" onClick='showMdImage(event)'  title="${title ? title : ''}" alt="${text ? text : ''}" style="max-height:200px;"/></div>`;
     }
 
     codeRenderer(code, infostring, escaped) {
@@ -530,3 +577,18 @@ class MarkdownRenderer {
 
 }
 const markdownRenderer = new MarkdownRenderer()
+
+function showMdImage(event) {
+    var image = new Image();
+
+    image.src = event.target.src;
+
+    var viewer = new Viewer(image, {
+        hidden: function () {
+            viewer.destroy();
+        },
+    });
+
+    // image.click();
+    viewer.show();
+}

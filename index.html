@@ -22,6 +22,8 @@
     <link rel="stylesheet" href="./style/FontAwesome/css/font-awesome.css">
     <link rel="stylesheet" href="./style/fonts/fonts.css">
     <link rel="stylesheet" href="./style/highlight.css">
+    <!-- 图片预览 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.11.6/viewer.css" />
 
     <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/default.min.css"> -->
     <script src="./style/clipboard.min.js"></script>
@@ -29,9 +31,9 @@
     <script src="https://cdn.jsdelivr.net/npm/marked-highlight/lib/index.umd.js"></script>
     <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/dark.min.css"> -->
     <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/shell.min.js"></script>
 
-
+    <!-- 图片预览 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.11.6/viewer.min.js"></script>
     <script src="./style/axios.min.js"></script>
     <script src="./style/vue@2.7.14"></script>
     <script src="https://unpkg.com/vue-multiselect@2.1.6"></script>
@@ -151,7 +153,8 @@
                     </div>
                 </div>
                 <div id="content" class="content" :class="renderType=='md'?'content-md':''">
-                    <main ref="mdRender" class="mdRender" v-html="mdDoc" v-if="renderType=='md'" @click="closeSidebar">
+                    <main ref="mdRender" class="mdRender" v-html="mdDoc" v-if="renderType=='md'"
+                        @click="closeSidebar">
                     </main>
                     <main id="iframe-container" v-else>
                         <iframe v-show="renderType=='pdf'" :src="'/pdfjs/web/viewer.html?file='+pdfSrc"

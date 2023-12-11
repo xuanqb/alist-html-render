@@ -61,6 +61,7 @@ a>.hljs {
     position: sticky;
     position: -webkit-sticky;
     top: 0;
+    margin-left: 15px;
     height: var(--menu-bar-height);
 }
 
