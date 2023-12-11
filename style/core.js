@@ -619,8 +619,7 @@ class MarkdownRenderer {
         return `<div style="text-align: center;"><img src="${imgSrc}" onClick='showMdImage(event)'  title="${title ? title : ''}" alt="${text ? text : ''}" style="max-height:200px;"/></div>`;
     }
 
-    codeRenderer(code, infostring, escaped) {
-        const [lang, ...attrsString] = infostring.split(' | ');
+    codeRenderer(code, lang, escaped) {
         const language = hljs.getLanguage(lang) ? lang : 'plaintext';
 
         return `<pre><div class="buttons"><button class="fa fa-copy clip-button" title="Copy to clipboard" aria-label="Copy to clipboard"><i class="tooltiptext"></i> </button></div><code class="hljs language-${lang}">${hljs.highlight(code, { language }).value}</code></pre>`;
