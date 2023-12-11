@@ -105,7 +105,10 @@ new Vue({
                 // 保存最近一次观看的专栏的章节
                 saveCurrentProgress(newHash)
                 // 保存每个专栏最近一次观看的章节
-                localStorage.setItem(this.currentSelectColumn, newHash)
+                debugger
+                let cloumuMenuProgress = JSON.parse(localStorage.getItem(cloumuMenuProgressKey)) || {}
+                cloumuMenuProgress[this.currentSelectColumn] = newHash
+                localStorage.setItem(cloumuMenuProgressKey, JSON.stringify(cloumuMenuProgress))
             }
         },
         handleSelectOpen() {
@@ -271,13 +274,14 @@ new Vue({
             if (this.selectColumn) {
                 this.menus = []
                 // 当前专栏最近看的章节
-                let currentColumnLookedMenu = localStorage.getItem(this.selectColumn.value)
+                let cloumuMenuProgress = JSON.parse(localStorage.getItem(cloumuMenuProgressKey)) || {}
+                const currentColumnLookedMenu = cloumuMenuProgress[this.selectColumn.value] || null
                 if (currentColumnLookedMenu) {
                     window.location.hash = currentColumnLookedMenu
                     this.loadColumByUrl()
                     return
                 }
-                window.location.hash = currentColumnLookedMenu
+                window.location.hash = `#${this.selectColumn.value}`
                 this.currentSelectColumn = this.selectColumn.value
                 this.loadMenus(this.selectColumn.value)
             }
@@ -349,6 +353,7 @@ new Vue({
                 this.sortMenus = currentColumnMenu.sortMenus
                 this.menus = currentColumnMenu.menus
                 this.renderContentByUrl()
+                return
             }
             this.getFsList(`/${column}`).then(async (res) => {
                 currentColumnMenu = { menus: [], sortMenus: {} }
@@ -433,6 +438,8 @@ new Vue({
 });
 
 const excludedExtensions = ['.mp3', '.mp4', '.m4a', 'images', 'MP3', 'videos', 'img']
+// 各专栏观看进度
+const cloumuMenuProgressKey = 'cloumuMenuProgress'
 
 function getNameExt(filename) {
     return filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2);
