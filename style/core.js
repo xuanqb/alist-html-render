@@ -113,7 +113,6 @@ new Vue({
                 let completed = false
                 // 根据章节索引计算是否已看完
                 if (this.currentMenu && !this.getMenuNode(1)) {
-                    debugger
                     completed = true
                 }
                 cloumuMenuProgress[this.currentSelectColumn] = { path: newHash, completed: completed }
@@ -217,10 +216,11 @@ new Vue({
                 } else {
                     this.menuContentMap[key] = { loaded: false, data: null }
                 }
+                const reqUrl = `${this.columApiServer}/d` + encodeURIComponent(menuNode.path)
                 if (menuNode.type === 'pdf') {
                     axios({
                         method: 'get',
-                        url: `${this.columApiServer}/d` + menuNode.path,
+                        url: reqUrl,
                         headers: {
                             Authorization: this.token
                         },
@@ -235,15 +235,20 @@ new Vue({
                 } else {
                     axios({
                         method: 'get',
-                        url: `${this.columApiServer}/d` + menuNode.path,
+                        url: reqUrl,
                         headers: {
                             Authorization: this.token
                         },
                     }).then(res => {
-                        this.menuContentMap[key].data = res.data
-                            .replaceAll('user-select', 'user-select-fuck')
-                            .replaceAll('overflow: hidden', 'overflow: auto')
-                            .replaceAll('-webkit-box-orient:vertical', '').replaceAll('-webkit-box-orient: vertical', '')
+                        if (menuNode.type === 'html') {
+                            this.menuContentMap[key].data = res.data
+                                .replaceAll('user-select', 'user-select-fuck')
+                                .replaceAll('overflow: hidden', 'overflow: auto')
+                                .replaceAll('-webkit-box-orient:vertical', '').replaceAll('-webkit-box-orient: vertical', '')
+                        } else {
+                            this.menuContentMap[key].data = res.data
+                        }
+
                         this.menuContentMap[key].loaded = true
                         resolve(this.menuContentMap[key].data)
                     }).catch(err => {
