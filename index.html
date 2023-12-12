@@ -162,34 +162,42 @@
                         <iframe v-show="renderType=='html'" :srcdoc="htmlSrcDoc" frameborder="0" scrolling="no"
                             ref="htmlIframe" onload="resizeIframe(this)"></iframe>
                     </main>
-                    <nav class="nav-wrapper" aria-label="Page navigation">
-                        <a rel="prev" class="mobile-nav-chapters previous" @click="prevMenu" v-show="getMenuNode(-1)"
-                            title="上一节" aria-label="Previous chapter" aria-keyshortcuts="Left">
-                            <i class="fa fa-angle-left"></i>
-                        </a>
-                        <a rel="next prefetch" class="mobile-nav-chapters next" @click="nextMenu"
-                            v-show="getMenuNode(1)" title="下一节" aria-label="Next chapter" aria-keyshortcuts="Right">
-                            <i class="fa fa-angle-right"></i>
-                        </a>
+                    <nav class="nav-wrapper" aria-label="Page navigation" v-if="renderStatus"
+                        :class="renderType=='md'?'':'nav-wrapper-not-md'">
+                        <div class="pagination_box" v-if="getMenuNode(-1)" @click="prevMenu">
+                            <a rel="prev" class="mobile-nav-chapters previous" title="上一节" aria-label="Previous chapter"
+                                aria-keyshortcuts="Left">
+                                <span class="pagination_btn">上一节</span>
+                                <span class="pagination_title">{{removNameExt(getMenuNode(-1).menuName)}}</span>
+                            </a>
+                        </div>
+                        <div class="pagination_box" style="padding-right: 10px; padding-left: 0;" v-if="getMenuNode(1)"
+                            @click="nextMenu">
+                            <a rel="next prefetch" class="mobile-nav-chapters next" title="下一节"
+                                aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class="pagination_btn">下一节</span>
+                                <span class="pagination_title">{{removNameExt(getMenuNode(1).menuName)}}</span>
+                            </a>
+                        </div>
                         <div style="clear: both"></div>
                     </nav>
                 </div>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                <a rel="prev" class="nav-chapters previous" @click="prevMenu" v-show="getMenuNode(-1)" title="上一节"
+                <a rel="prev" class="nav-chapters previous" @click="prevMenu" v-if="getMenuNode(-1)" title="上一节"
                     aria-label="Previous chapter" aria-keyshortcuts="Left">
                     <i class="fa fa-angle-left"></i>
                 </a>
 
-                <a rel="next prefetch" class="nav-chapters next" @click="nextMenu" v-show="getMenuNode(1)" title="下一节"
+                <a rel="next prefetch" class="nav-chapters next" @click="nextMenu" v-if="getMenuNode(1)" title="下一节"
                     aria-label="Next chapter" aria-keyshortcuts="Right">
                     <i class="fa fa-angle-right"></i>
                 </a>
             </nav>
         </div>
 
-        <script src="./style/core.js?v=9"></script>
+        <script src="./style/core.js?v=10"></script>
 
     </div>
 </body>

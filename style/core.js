@@ -6,6 +6,7 @@ new Vue({
         pdfSrc: '',
         mdDoc: '',
         renderType: 'html',
+        renderStatus: false,
         columPath: '',
         token: '',
         columApiServer: '',
@@ -152,6 +153,7 @@ new Vue({
             console.log('索引', subMenu.index);
             this.currentMenu = subMenu
             this.renderPdf = false
+            this.renderStatus = false
             this.checkMobile() && (this.showSidebar = false)
             if (this.brforeSubMenu === subMenu) return
             subMenu.active = true
@@ -172,6 +174,7 @@ new Vue({
                     scrollIntoView(document.querySelector('.active'))
                     // 缓存下一节
                     this.loadNextMenu()
+                    this.renderStatus = true
                 })
             } else if (renderType === 'html') {
                 this.loadNode(subMenu).then((res) => {
@@ -180,6 +183,11 @@ new Vue({
                     scrollIntoView(document.querySelector('.active'))
                     // 缓存下一节
                     this.loadNextMenu()
+                    this.$nextTick(() => {
+                        setTimeout(() => {
+                            this.renderStatus = true
+                        }, 700)
+                    })
                 })
             } else if (renderType === 'md') {
                 this.loadNode(subMenu).then((res) => {
@@ -188,6 +196,7 @@ new Vue({
                     scrollIntoView(document.querySelector('.active'))
                     // 缓存下一节
                     this.loadNextMenu()
+                    this.renderStatus = true
                 })
             }
         },
@@ -244,6 +253,7 @@ new Vue({
                             this.menuContentMap[key].data = res.data
                                 .replaceAll('user-select', 'user-select-fuck')
                                 .replaceAll('overflow: hidden', 'overflow: auto')
+                                .replaceAll('word-break: break-all;', 'word-break: break-word;')
                                 .replaceAll('-webkit-box-orient:vertical', '').replaceAll('-webkit-box-orient: vertical', '')
                         } else {
                             this.menuContentMap[key].data = res.data

@@ -165,7 +165,7 @@ h6:target::before {
 }
 
 .content a:hover {
-    text-decoration: underline;
+    /* text-decoration: underline; */
 }
 
 .content img,

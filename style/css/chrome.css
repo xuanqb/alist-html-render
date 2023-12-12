@@ -180,17 +180,62 @@ a>.hljs {
 }
 
 .nav-wrapper {
-    margin-block-start: 50px;
+    /* margin-block-start: 50px; */
+    /* display: none; */
+    /* border-top: 1px solid var(--vp-c-divider);
+    padding: 24px;
+    display: grid;
+    grid-row-gap: 8px; */
     display: none;
+    margin: auto;
+    border-top: 1px solid #e2e2e3;
+    padding: 24px 0 96px 0;
 }
 
-.mobile-nav-chapters {
-    font-size: 2.5em;
-    text-align: center;
-    text-decoration: none;
-    width: 90px;
-    border-radius: 5px;
-    background-color: var(--sidebar-bg);
+.nav-wrapper-not-md {
+    width: calc(100% - 40px);
+}
+
+/* .mobile-nav-chapters {
+    display: block;
+    border: 1px solid #e2e2e3;
+    border-radius: 8px;
+    padding: 11px 16px 13px;
+    width: 100%;
+    height: 100%;
+    transition: border-color .25s;
+} */
+
+.pagination_box {
+    height: 60px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    border: 1px solid #e2e2e3;
+    border-radius: 10px;
+    padding-left: 10px;
+}
+
+.pagination_box:hover,
+.pagination_box:active {
+    border-color: #3451b2;
+}
+
+.pagination_btn {
+    display: block;
+    font-size: 12px;
+    color: rgba(60, 60, 67, .78);
+}
+
+.pagination_title {
+    font-size: 14px;
+    color: #3451b2;
+}
+
+.mobile-nav-chapters.next {
+    margin-left: auto;
+    text-align: right;
 }
 
 /* Only Firefox supports flow-relative values */
