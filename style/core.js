@@ -95,9 +95,6 @@ new Vue({
             return true
 
         },
-        clickChapterItem(obj) {
-            obj.expanded = !obj.expanded;
-        },
         checkMobile() {
             return window.innerWidth <= 800; // 根据实际情况设置移动端的宽度阈值
         },
@@ -124,8 +121,7 @@ new Vue({
         },
         getCloumuMenuProgress() {
             return JSON.parse(localStorage.getItem(cloumuMenuProgressKey)) || {}
-        }
-        ,
+        },
         handleSelectOpen() {
             this.$nextTick(() => {
                 scrollIntoView(this.$refs.multiselect.$el.querySelector('.multiselect__option--selected'))
@@ -341,10 +337,7 @@ new Vue({
                     "refresh": false
                 }
             }).then(res => {
-                let collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-                res.data.data.content.sort((a, b) => {
-                    return collator.compare(a.name, b.name)
-                })
+                res.data.data.content?.sort((a, b) => naturalSortByName(a, b))
                 res.data.data.content?.forEach((obj) => {
                     const column = obj.name;
                     // 过滤视频课
@@ -366,6 +359,7 @@ new Vue({
                 this.loadColumByUrl();
 
             }).catch(err => {
+                console.error('加载失败', err)
                 // 清空配置
                 clearColumnConfig()
             })
@@ -418,10 +412,7 @@ new Vue({
                 if (!res.data.data.content) return
                 // 优先加载
                 const prioritizeFile = prioritizeFileExtensions(res.data.data.content.map(o => o.name))
-                let collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-                res.data.data.content.sort((a, b) => {
-                    return collator.compare(a.name, b.name)
-                })
+                res.data.data.content.sort((a, b) => naturalSortByName(a, b))
                 for (const obj of res.data.data.content) {
                     const subMenu = [];
                     const menuName = obj.name;
@@ -444,9 +435,7 @@ new Vue({
                         const subRes = await this.getFsList(`/${column}/${menuName}`);
                         // 是否保存pdf
                         const prioritizeFile = prioritizeFileExtensions(subRes.data.data.content.map(o => o.name))
-                        subRes.data.data.content?.sort((a, b) => {
-                            return collator.compare(a.name, b.name)
-                        })
+                        subRes.data.data.content?.sort((a, b) => naturalSortByName(a, b))
                         subRes.data.data.content?.forEach((subObj) => {
                             const subMenuName = subObj.name;
                             if (!subMenuName.endsWith(prioritizeFile)) return
@@ -504,6 +493,7 @@ const columnViewingStatus = {
     'notStarted': '未观看',
     'completed': '已看完'
 }
+const replaceColumnKeywords = ['[天下无鱼][shikey.com]', '[一手资源：666java.com]', '_For_group_share', '【公众号：小谧蜂】']
 // 各专栏观看进度
 const cloumuMenuProgressKey = 'cloumuMenuProgress'
 
@@ -514,7 +504,10 @@ function getNameExt(filename) {
 let count = 0
 
 function replaceName(name) {
-    return name.replace('[天下无鱼][shikey.com]', '').replace('[一手资源：666java.com]', '').replace('_For_group_share', '');
+    for (const key in replaceColumnKeywords) {
+        name = name.replace(replaceColumnKeywords[key], '')
+    }
+    return name
 }
 
 function removNameExt(fileName) {
@@ -683,4 +676,9 @@ function columnGroupBy(array, keyFunction) {
             status: columnViewingStatus[status], columns: tempArray[columnViewingStatus[status]]
         }
     })
+}
+const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+// 数据自然排序
+function naturalSortByName(a, b) {
+    return collator.compare(a.name, b.name)
 }
