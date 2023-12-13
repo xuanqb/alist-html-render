@@ -341,6 +341,10 @@ new Vue({
                     "refresh": false
                 }
             }).then(res => {
+                let collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+                res.data.data.content.sort((a, b) => {
+                    return collator.compare(a.name, b.name)
+                })
                 res.data.data.content?.forEach((obj) => {
                     const column = obj.name;
                     // 过滤视频课
@@ -440,6 +444,9 @@ new Vue({
                         const subRes = await this.getFsList(`/${column}/${menuName}`);
                         // 是否保存pdf
                         const prioritizeFile = prioritizeFileExtensions(subRes.data.data.content.map(o => o.name))
+                        subRes.data.data.content?.sort((a, b) => {
+                            return collator.compare(a.name, b.name)
+                        })
                         subRes.data.data.content?.forEach((subObj) => {
                             const subMenuName = subObj.name;
                             if (!subMenuName.endsWith(prioritizeFile)) return
