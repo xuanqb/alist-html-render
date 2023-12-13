@@ -112,7 +112,7 @@ new Vue({
         handleHashChange() {
             // 获取新的 hash 值
             const newHash = window.location.hash;
-            if (newHash) {
+            if (newHash && newHash.split('/').length > 1) {
                 // 保存最近一次观看的专栏的章节
                 saveCurrentProgress(newHash)
                 // 保存每个专栏最近一次观看的章节
@@ -216,7 +216,7 @@ new Vue({
         loadNode(menuNode) {
             return new Promise((resolve, reject) => {
                 if (!menuNode) reject('章节不能为空')
-                const key = menuNode.path
+                const key = decodeURIComponent(menuNode.path)
                 const menuName = menuNode.menuName
                 let currentMenuContent = this.menuContentMap[key]
                 if (currentMenuContent && currentMenuContent.loaded) {
@@ -231,7 +231,7 @@ new Vue({
                 } else {
                     this.menuContentMap[key] = { loaded: false, data: null }
                 }
-                const reqUrl = `${this.columApiServer}/d` + encodeURIComponent(menuNode.path)
+                const reqUrl = `${this.columApiServer}/d` + menuNode.path
                 if (menuNode.type === 'pdf') {
                     axios({
                         method: 'get',
@@ -307,12 +307,16 @@ new Vue({
                 this.showSelect()
                 return
             }
+            if (this.urlParams.length == 1) {
+                this.showSidebar = true
+            }
             this.selectColumn = this.allColumns.find(v => v.value == selectColumnValue)
             if (!this.selectColumn) return
             this.currentSelectColumn = this.selectColumn.value
             this.loadMenus(this.selectColumn.value)
         },
         loadColumn(obj) {
+            debugger
             // 专栏分组之后点击 组名也会触发，需要忽略此次选择
             if (!obj || obj instanceof Array) return
             if (this.selectColumn) {
@@ -438,7 +442,7 @@ new Vue({
                             type: getNameExt(menuName),
                             menuName: replaceName(menuName),
                             sourceMenuName: menuName,
-                            parentPath: this.columPath + `/${this.selectColumn.value}`,
+                            parentPath: this.columPath + encodeURIComponent(`/${this.selectColumn.value}`),
                             path: this.columPath + `/${this.selectColumn.value}/${menuName}`
                         })
                         currentColumnMenu.sortMenus[menuObj.index] = menuObj
@@ -457,7 +461,7 @@ new Vue({
                                 sourceMenuName: menuName,
                                 parentPath: this.columPath + `/${this.selectColumn.value}/${menuName}`,
                                 type: getNameExt(subMenuName),
-                                path: this.columPath + `/${this.selectColumn.value}/${menuName}/${subMenuName}`,
+                                path: this.columPath + encodeURIComponent(`/${this.selectColumn.value}/${menuName}/${subMenuName}`),
                                 index: index++
                             }
                             currentColumnMenu.sortMenus[menu.index] = menu
