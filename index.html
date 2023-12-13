@@ -19,25 +19,21 @@
     <link rel="stylesheet" href="./style/css/general.css">
     <link rel="stylesheet" href="./style/css/chrome.css">
 
-    <link rel="stylesheet" href="./style/FontAwesome/css/font-awesome.css">
+    <link rel="stylesheet" href="./dependency/FontAwesome/css/font-awesome.css">
     <link rel="stylesheet" href="./style/fonts/fonts.css">
     <link rel="stylesheet" href="./style/highlight.css">
-    <!-- 图片预览 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.11.6/viewer.css" />
+    <link rel="stylesheet" href="./dependency/vue-multiselect/vue-multiselect.min.css">
+    <link rel="stylesheet" href="./dependency/viewerjs/viewer.css" />
 
-    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/default.min.css"> -->
-    <script src="./style/clipboard.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked-highlight/lib/index.umd.js"></script>
-    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/dark.min.css"> -->
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+    <script src="./dependency/clipboard/clipboard.min.js"></script>
+    <script src="./dependency/marked/marked.min.js"></script>
+    <script src="./dependency/marked-highlight/index.umd.js"></script>
+    <script src="./dependency/highlightjs/highlight.min.js"></script>
 
-    <!-- 图片预览 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.11.6/viewer.min.js"></script>
-    <script src="./style/axios.min.js"></script>
-    <script src="./style/vue@2.7.14"></script>
-    <script src="https://unpkg.com/vue-multiselect@2.1.6"></script>
-    <link rel="stylesheet" href="https://unpkg.com/vue-multiselect@2.1.6/dist/vue-multiselect.min.css">
+    <script src="./dependency/viewerjs/viewer.min.js"></script>
+    <script src="./dependency/axios/axios.min.js"></script>
+    <script src="./dependency/vue/vue@2.7.14"></script>
+    <script src="./dependency/vue-multiselect/vue-multiselect.min.js"></script>
     <!--    <script>-->
     <!--        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };-->
     <!--    </script>-->
@@ -55,7 +51,11 @@
             const view = obj.contentDocument?.querySelector('#viewer')
             if (view) {
                 obj.contentWindow.PDFViewerApplication.eventBus.on('pagesloaded', function (data) {
-                    obj.style.height = view.scrollHeight + 51 + 'px';
+                    let increaseHeight = 35
+                    if (!_.checkMobile()) {
+                        increaseHeight = 253
+                    }
+                    obj.style.height = view.scrollHeight + increaseHeight + 'px';
                     const scrollY = localStorage.getItem('scrollY')
                     if (scrollY) {
                         window.scrollTo({ top: parseInt(scrollY) })
@@ -160,7 +160,7 @@
                     <main ref="mdRender" class="mdRender" v-html="mdDoc" v-if="renderType=='md'" @click="closeSidebar">
                     </main>
                     <main id="iframe-container" v-else>
-                        <iframe v-show="renderType=='pdf'" :src="'/pdfjs/web/viewer.html?file='+pdfSrc"
+                        <iframe v-show="renderType=='pdf'" :src="'dependency/pdfjs/web/viewer.html?file='+pdfSrc"
                             onload="resizeIframe(this)"></iframe>
                         <iframe v-show="renderType=='html'" :srcdoc="htmlSrcDoc" frameborder="0" scrolling="no"
                             ref="htmlIframe" onload="resizeIframe(this)"></iframe>
@@ -225,7 +225,7 @@
                 </div>
             </div>
         </div>
-        <script src="./style/core.js?v=12"></script>
+        <script src="./style/core.js?v=13"></script>
     </div>
 </body>
 
