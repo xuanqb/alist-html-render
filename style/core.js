@@ -192,7 +192,7 @@ new Vue({
                     this.$nextTick(() => {
                         setTimeout(() => {
                             this.renderStatus = true
-                        }, 700)
+                        }, 1000)
                     })
                 })
             } else if (renderType === 'md') {
