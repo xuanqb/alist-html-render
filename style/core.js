@@ -29,7 +29,8 @@ new Vue({
         // 菜单和内容的映射
         menuContentMap: {},
         // 专栏和菜单的映射
-        columnMenuMap: {}
+        columnMenuMap: {},
+        isDialogVisible: false
     },
     watch: {
         'selectColumn.name': (n, o) => {
@@ -41,9 +42,10 @@ new Vue({
     computed: {},
     created() {
         // 初始化配置
-        this.initConfig('请输入配置')
+        if (this.initConfig()) {
+            this.getAllColums();
+        }
         // this.loadMenus()
-        this.getAllColums();
         window.addEventListener('hashchange', this.handleHashChange);
         window.addEventListener('resize', this.showOrHideSideBar);
         _ = this
@@ -70,24 +72,32 @@ new Vue({
         window.removeEventListener('resize', this.showOrHideSideBar);
     },
     methods: {
-        customLabel({ name, isEnd }) {
-            return `${name}`
+        // 打开配置页
+        openSettings() {
+            this.isDialogVisible = !this.isDialogVisible
         },
-        initConfig(str) {
+        saveSettings() {
+            const tempConfigStr = {
+                columPath: this.columPath,
+                token: this.token,
+                columApiServer: this.columApiServer,
+            }
+            setColumnConfig(JSON.stringify(tempConfigStr))
+            window.location.reload()
+            this.isDialogVisible = false
+        },
+        initConfig() {
             let tempConfigStr = getColumnConfig()
             if (!tempConfigStr) {
-                tempConfigStr = prompt(str, '')
-                this.isFirstLoad = true
-                setColumnConfig(tempConfigStr)
+                this.isDialogVisible = true
+                return false
             }
             let tempConfigJson;
             try {
                 tempConfigJson = JSON.parse(tempConfigStr)
             } catch (e) {
-            }
-            if (!(tempConfigJson && tempConfigJson['columPath'])) {
-                clearColumnConfig()
-                return (count < 10) && (count++, this.initConfig('配置不正确，请重新输入'))
+                this.isDialogVisible = true
+                return false
             }
             this.columPath = tempConfigJson['columPath']
             this.token = tempConfigJson['token']
@@ -361,7 +371,9 @@ new Vue({
             }).catch(err => {
                 console.error('加载失败', err)
                 // 清空配置
-                clearColumnConfig()
+                // clearColumnConfig()
+                alert('配置有误，请重新配置')
+                this.openSettings()
             })
         },
         columnGroup() {

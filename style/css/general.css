@@ -104,6 +104,7 @@ h6:target::before {
     /* Safari does not support logical properties */
     scroll-margin-top: calc(var(--menu-bar-height) + 0.5em);
 }
+
 /* .page {
     outline: 0;
     padding: 0 var(--page-padding);
@@ -115,8 +116,10 @@ h6:target::before {
 .page {
     outline: 0;
     /* padding: 0 var(--page-padding); */
-    margin-block-start: calc(0px - var(--menu-bar-height)); /* Compensate for the #menu-bar-hover-placeholder */
+    margin-block-start: calc(0px - var(--menu-bar-height));
+    /* Compensate for the #menu-bar-hover-placeholder */
 }
+
 .page-wrapper {
     box-sizing: border-box;
     background-color: var(--bg);
@@ -357,4 +360,72 @@ iframe {
     top: 0;
     /* background-color: #fff; */
     z-index: 1;
+}
+
+/* Dialog 蒙层样式 */
+.dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 111;
+}
+
+/* Dialog 容器样式 */
+.dialog-container {
+    background-color: var(--sidebar-bg);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    max-width: 600px;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+/* 关闭按钮样式 */
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.config {
+    height: 56px;
+}
+
+.config_key {
+    display: inline-block;
+    width: 100px;
+}
+
+.config input {
+    display: inline-block;
+    background: transparent;
+    border-radius: 4px;
+    width: calc(100% - 120px);
+    height: 40px;
+    border: 1px solid #ccc;
+}
+
+.config input:focus {
+    outline: none;
+    /* 移除默认的选中时边框样式 */
+    border-color: #007bff;
+}
+
+.config_btn {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.config_btn span {
+    margin: 0 50px;
 }

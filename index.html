@@ -151,6 +151,9 @@
                     </div>
                     <div class="menu-title">{{removNameExt(title)}}</div>
                     <div class="right-buttons">
+                        <span>
+                            <i class="fa fa-cog" @click="openSettings"></i>
+                        </span>
                     </div>
                 </div>
                 <div id="content" class="content" :class="renderType=='md'?'content-md':''">
@@ -197,8 +200,32 @@
             </nav>
         </div>
 
-        <script src="./style/core.js?v=11"></script>
-
+        <!-- Dialog 组件 -->
+        <div v-if="isDialogVisible" class="dialog-overlay">
+            <div class="dialog-container">
+                <span class="close-btn" @click="openSettings">&times;</span>
+                <div class="dialog-content">
+                    <div style="text-align: center; font-size: 2rem;height: 50px;">配置管理</div>
+                    <div class="config">
+                        <span class="config_key">专栏位置：</span>
+                        <input v-model="columPath"></input>
+                    </div>
+                    <div class="config">
+                        <span class="config_key">alistToken：</span>
+                        <input v-model="token"></input>
+                    </div>
+                    <div class="config">
+                        <span class="config_key">alist地址：</span>
+                        <input v-model="columApiServer"></input>
+                    </div>
+                    <div class="config_btn">
+                        <span @click="saveSettings">保存</span>
+                        <span @click="isDialogVisible=false">取消</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="./style/core.js?v=12"></script>
     </div>
 </body>
 
