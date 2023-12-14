@@ -124,7 +124,7 @@ new Vue({
         handleHashChange() {
             // 获取新的 hash 值
             const newHash = window.location.hash;
-            if (newHash && newHash.split('/').length > 1) {
+            if (newHash && decodeURIComponent(newHash).split('/').length > 1) {
                 // 保存最近一次观看的专栏的章节
                 saveCurrentProgress(newHash)
                 // 保存每个专栏最近一次观看的章节
