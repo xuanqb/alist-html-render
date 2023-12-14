@@ -6,7 +6,7 @@
 # 配置
 进入网页需要在弹出框输入alist相关配置
 
-专栏位置：专栏在alist的路径 如全路径为http://192.168.123.8:5244/bdyun/html合集，则**专栏位置为：/bdyun/html合集**,
+专栏位置：专栏在alist的路径 如全路径为`http://192.168.123.8:5244/bdyun/html合集`，则**专栏位置为：/bdyun/html合集**,
 alist地址为**http://192.168.123.8:5244**
 
 alistToken：alist的token 从路径`/@manage/settings/other`中的令牌获取
