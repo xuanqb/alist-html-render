@@ -218,6 +218,14 @@
                         <span class="config_key">alist地址：</span>
                         <input v-model="columApiServer"></input>
                     </div>
+                    <div class="config">
+                        <span class="config_key">加载顺序：</span>
+                        <input v-model="priorityOrder"></input>
+                    </div>
+                    <div class="config">
+                        <span class="config_key">清除缓存</span>
+                        <button @click="clearCache">清除</button>
+                    </div>
                     <div class="config_btn">
                         <span @click="saveSettings">保存</span>
                         <span @click="isDialogVisible=false">取消</span>
@@ -225,7 +233,7 @@
                 </div>
             </div>
         </div>
-        <script src="./style/core.js?v=14"></script>
+        <script src="./style/core.js?v=15"></script>
     </div>
 </body>
 

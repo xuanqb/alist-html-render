@@ -10,6 +10,8 @@ new Vue({
         columPath: '',
         token: '',
         columApiServer: '',
+        // 优先加载顺序
+        priorityOrder: 'html,md,pdf',
         menus: [],
         urlParams: [],
         title: '',
@@ -72,6 +74,12 @@ new Vue({
         window.removeEventListener('resize', this.showOrHideSideBar);
     },
     methods: {
+        // 清除缓存
+        clearCache() {
+            localStorage.removeItem(cloumuMenuProgressKey)
+            localStorage.removeItem(currentProgressStr)
+            window.location.reload()
+        },
         // 打开配置页
         openSettings() {
             this.isDialogVisible = !this.isDialogVisible
@@ -81,6 +89,7 @@ new Vue({
                 columPath: this.columPath,
                 token: this.token,
                 columApiServer: this.columApiServer,
+                priorityOrder: this.priorityOrder
             }
             setColumnConfig(JSON.stringify(tempConfigStr))
             window.location.reload()
@@ -102,6 +111,9 @@ new Vue({
             this.columPath = tempConfigJson['columPath']
             this.token = tempConfigJson['token']
             this.columApiServer = tempConfigJson['columApiServer']
+            if (tempConfigJson['priorityOrder']) {
+                this.priorityOrder = tempConfigJson['priorityOrder']
+            }
             return true
 
         },
@@ -566,7 +578,7 @@ function scrollIntoView(target) {
 
 function prioritizeFileExtensions(fileList) {
     // 加载优先级，靠前的优先展示
-    const priorityOrder = ['md', 'html', 'pdf'];
+    const priorityOrder = _.priorityOrder.split(',');
     for (const extension of priorityOrder) {
         const matchingFile = fileList.find(file => file.endsWith(`.${extension}`));
         if (matchingFile) {
