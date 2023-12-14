@@ -316,7 +316,6 @@ new Vue({
             this.loadMenus(this.selectColumn.value)
         },
         loadColumn(obj) {
-            debugger
             // 专栏分组之后点击 组名也会触发，需要忽略此次选择
             if (!obj || obj instanceof Array) return
             if (this.selectColumn) {
@@ -436,14 +435,17 @@ new Vue({
                     let menuObj = { menuName: menuName, expanded: true }
                     if (!obj.is_dir) {
                         if (!menuName.endsWith(prioritizeFile)) continue
+                        const replaceMenuName = replaceName(menuName)
+                        const relativePath = encodeURIComponent(`${this.selectColumn.value}/${replaceMenuName}`)
                         // 是否保存pdf
                         menuObj = Object.assign({}, menuObj, {
                             index: index++,
                             type: getNameExt(menuName),
-                            menuName: replaceName(menuName),
+                            menuName: replaceMenuName,
                             sourceMenuName: menuName,
-                            parentPath: this.columPath + encodeURIComponent(`/${this.selectColumn.value}`),
-                            path: this.columPath + `/${this.selectColumn.value}/${menuName}`
+                            parentPath: this.columPath + `/${this.selectColumn.value}`,
+                            path: this.columPath + encodeURIComponent(`/${this.selectColumn.value}/${menuName}`),
+                            relativePath: relativePath
                         })
                         currentColumnMenu.sortMenus[menuObj.index] = menuObj
                     } else {
@@ -456,12 +458,15 @@ new Vue({
                             const subMenuName = subObj.name;
                             if (!subMenuName.endsWith(prioritizeFile)) return
                             if (excludedExtensions.some(ext => subMenuName.endsWith(ext))) return
+                            const replaceSubMenuName = replaceName(subMenuName)
+                            const relativePath = encodeURIComponent(`${this.selectColumn.value}/${menuName}/${replaceSubMenuName}`)
                             const menu = {
-                                menuName: replaceName(subMenuName),
-                                sourceMenuName: menuName,
+                                menuName: replaceSubMenuName,
+                                sourceMenuName: subMenuName,
                                 parentPath: this.columPath + `/${this.selectColumn.value}/${menuName}`,
                                 type: getNameExt(subMenuName),
                                 path: this.columPath + encodeURIComponent(`/${this.selectColumn.value}/${menuName}/${subMenuName}`),
+                                relativePath: relativePath,
                                 index: index++
                             }
                             currentColumnMenu.sortMenus[menu.index] = menu

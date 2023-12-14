@@ -121,7 +121,7 @@
                             <li>
                                 <ol class="section">
                                     <li class="chapter-item" v-for="subMenu in item.subMenu" :key="subMenu.menuName">
-                                        <a :href="'#'+currentSelectColumn+'/'+item.menuName+'/'+subMenu.menuName"
+                                        <a :href="'#'+subMenu.relativePath"
                                             @click="(event)=>renderContent(subMenu,event)"
                                             :class="subMenu.active?'active':''">{{subMenu.menuName}}</a>
                                     </li>
@@ -130,7 +130,7 @@
                         </div>
                         <div v-else>
                             <li class="chapter-item">
-                                <a :href="'#'+currentSelectColumn+'/'+item.menuName" @click="renderContent(item)"
+                                <a :href="'#'+item.relativePath" @click="renderContent(item)"
                                     :class="item.active?'active':''">{{item.menuName}}</a>
                             </li>
                         </div>
@@ -225,7 +225,7 @@
                 </div>
             </div>
         </div>
-        <script src="./style/core.js?v=13"></script>
+        <script src="./style/core.js?v=14"></script>
     </div>
 </body>
 
