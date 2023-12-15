@@ -438,7 +438,7 @@ new Vue({
                 currentColumnMenu = { menus: [], sortMenus: {} }
                 if (!res.data.data.content) return
                 // 优先加载
-                const prioritizeFile = prioritizeFileExtensions(res.data.data.content.map(o => o.name))
+                const prioritizeFile = prioritizeFileExtensions(res.data.data.content?.map(o => o.name))
                 res.data.data.content.sort((a, b) => naturalSortByName(a, b))
                 for (const obj of res.data.data.content) {
                     const subMenu = [];
@@ -464,7 +464,7 @@ new Vue({
                         menuObj.subMenu = subMenu;
                         const subRes = await this.getFsList(`/${column}/${menuName}`);
                         // 是否保存pdf
-                        const prioritizeFile = prioritizeFileExtensions(subRes.data.data.content.map(o => o.name))
+                        const prioritizeFile = prioritizeFileExtensions(subRes.data.data.content?.map(o => o.name))
                         subRes.data.data.content?.sort((a, b) => naturalSortByName(a, b))
                         subRes.data.data.content?.forEach((subObj) => {
                             const subMenuName = subObj.name;
@@ -577,6 +577,7 @@ function scrollIntoView(target) {
 }
 
 function prioritizeFileExtensions(fileList) {
+    if (!fileList) return null
     // 加载优先级，靠前的优先展示
     const priorityOrder = _.priorityOrder.split(',');
     for (const extension of priorityOrder) {
