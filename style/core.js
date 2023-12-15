@@ -157,7 +157,7 @@ new Vue({
         prevOrNextMenu(i) {
             const menuNode = this.getMenuNode(i)
             if (!menuNode) return
-            path = menuNode.path.replace(this.columPath + "/", '')
+            path = menuNode.relativePath
             window.location.hash = `#${path}`
             this.renderContent(menuNode)
         },
