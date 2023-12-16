@@ -108,7 +108,9 @@ new Vue({
                 this.isDialogVisible = true
                 return false
             }
-            this.columPath = tempConfigJson['columPath']
+            let tempColumPath = tempConfigJson['columPath']
+            if (tempColumPath && !tempColumPath.startsWith('/')) tempColumPath = '/' + tempColumPath
+            this.columPath = tempColumPath
             this.token = tempConfigJson['token']
             this.columApiServer = tempConfigJson['columApiServer']
             if (tempConfigJson['priorityOrder']) {
