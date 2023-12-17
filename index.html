@@ -224,6 +224,10 @@
                         <input v-model="priorityOrder"></input>
                     </div>
                     <div class="config">
+                        <span class="config_key">屏蔽标题字符：</span>
+                        <textarea v-model="blockStrings" rows="4" placeholder="每行写一个"></textarea>
+                    </div>
+                    <div class="config">
                         <span class="config_key">清除缓存</span>
                         <button @click="clearCache">清除</button>
                     </div>

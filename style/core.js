@@ -32,6 +32,8 @@ new Vue({
         menuContentMap: {},
         // 专栏和菜单的映射
         columnMenuMap: {},
+        // 屏蔽标题中的字符串
+        blockStrings: '[天下无鱼][shikey.com]\n[一手资源：666java.com]\n_For_group_share\n【公众号：小谧蜂】\n✅',
         isDialogVisible: false
     },
     watch: {
@@ -89,7 +91,8 @@ new Vue({
                 columPath: this.columPath,
                 token: this.token,
                 columApiServer: this.columApiServer,
-                priorityOrder: this.priorityOrder
+                priorityOrder: this.priorityOrder,
+                blockStrings: this.blockStrings
             }
             setColumnConfig(JSON.stringify(tempConfigStr))
             window.location.reload()
@@ -115,6 +118,9 @@ new Vue({
             this.columApiServer = tempConfigJson['columApiServer']
             if (tempConfigJson['priorityOrder']) {
                 this.priorityOrder = tempConfigJson['priorityOrder']
+            }
+            if (tempConfigJson['blockStrings']) {
+                this.blockStrings = tempConfigJson['blockStrings']
             }
             return true
 
@@ -539,6 +545,7 @@ function getNameExt(filename) {
 let count = 0
 
 function replaceName(name) {
+    const replaceColumnKeywords = _.blockStrings.split('\n')
     for (const key in replaceColumnKeywords) {
         name = name.replace(replaceColumnKeywords[key], '')
     }
