@@ -534,7 +534,7 @@ const columnViewingStatus = {
     'notStarted': '未观看',
     'completed': '已看完'
 }
-const replaceColumnKeywords = ['[天下无鱼][shikey.com]', '[一手资源：666java.com]', '_For_group_share', '【公众号：小谧蜂】']
+let replaceColumnKeywords = null
 // 各专栏观看进度
 const cloumuMenuProgressKey = 'cloumuMenuProgress'
 
@@ -545,7 +545,9 @@ function getNameExt(filename) {
 let count = 0
 
 function replaceName(name) {
-    const replaceColumnKeywords = _.blockStrings.split('\n')
+    if (!replaceColumnKeywords) {
+        replaceColumnKeywords = _.blockStrings.split('\n')
+    }
     for (const key in replaceColumnKeywords) {
         name = name.replace(replaceColumnKeywords[key], '')
     }
