@@ -442,19 +442,22 @@ new Vue({
                 this.renderContentByUrl()
                 return
             }
-            this.getFsList(`/${column}`).then(async (res) => {
+
+            const fetchAndProcessData = async () => {
+                const res = await this.getFsList(`/${column}`);
                 currentColumnMenu = { menus: [], sortMenus: {} }
                 if (!res.data.data.content) return
                 // 优先加载
-                const prioritizeFile = prioritizeFileExtensions(res.data.data.content?.map(o => o.name))
+                const prioritizeFile = prioritizeFileExtensions(res.data.data.content?.map(o => o.name));
                 res.data.data.content.sort((a, b) => naturalSortByName(a, b))
-                for (const obj of res.data.data.content) {
+                const subMenuPromises = [];
+                res.data.data.content.forEach((obj) => {
                     const subMenu = [];
                     const menuName = obj.name;
-                    if (excludedExtensions.some(ext => menuName.endsWith(ext))) continue
+                    if (excludedExtensions.some(ext => menuName.endsWith(ext))) return
                     let menuObj = { menuName: menuName, expanded: true }
                     if (!obj.is_dir) {
-                        if (!menuName.endsWith(prioritizeFile)) continue
+                        if (!menuName.endsWith(prioritizeFile)) return
                         const replaceMenuName = replaceName(menuName)
                         const relativePath = encodeURIComponent(`${this.selectColumn.value}/${replaceMenuName}`)
                         // 是否保存pdf
@@ -470,28 +473,31 @@ new Vue({
                         currentColumnMenu.sortMenus[menuObj.index] = menuObj
                     } else {
                         menuObj.subMenu = subMenu;
-                        const subRes = await this.getFsList(`/${column}/${menuName}`);
-                        // 是否保存pdf
-                        const prioritizeFile = prioritizeFileExtensions(subRes.data.data.content?.map(o => o.name))
-                        subRes.data.data.content?.sort((a, b) => naturalSortByName(a, b))
-                        subRes.data.data.content?.forEach((subObj) => {
-                            const subMenuName = subObj.name;
-                            if (!subMenuName.endsWith(prioritizeFile)) return
-                            if (excludedExtensions.some(ext => subMenuName.endsWith(ext))) return
-                            const replaceSubMenuName = replaceName(subMenuName)
-                            const relativePath = encodeURIComponent(`${this.selectColumn.value}/${menuName}/${replaceSubMenuName}`)
-                            const menu = {
-                                menuName: replaceSubMenuName,
-                                sourceMenuName: subMenuName,
-                                parentPath: this.columPath + `/${this.selectColumn.value}/${menuName}`,
-                                type: getNameExt(subMenuName),
-                                path: this.columPath + encodeURIComponent(`/${this.selectColumn.value}/${menuName}/${subMenuName}`),
-                                relativePath: relativePath,
-                                index: index++
-                            }
-                            currentColumnMenu.sortMenus[menu.index] = menu
-                            subMenu.push(menu);
-                        });
+                        subMenuPromises.push(
+                            this.getFsList(`/${column}/${menuName}`).then((subRes) => {
+                                // 是否保存pdf
+                                const prioritizeFile = prioritizeFileExtensions(subRes.data.data.content?.map(o => o.name))
+                                subRes.data.data.content?.sort((a, b) => naturalSortByName(a, b))
+                                subRes.data.data.content?.forEach((subObj) => {
+                                    const subMenuName = subObj.name;
+                                    if (!subMenuName.endsWith(prioritizeFile)) return
+                                    if (excludedExtensions.some(ext => subMenuName.endsWith(ext))) return
+                                    const replaceSubMenuName = replaceName(subMenuName)
+                                    const relativePath = encodeURIComponent(`${this.selectColumn.value}/${menuName}/${replaceSubMenuName}`)
+                                    const menu = {
+                                        menuName: replaceSubMenuName,
+                                        sourceMenuName: subMenuName,
+                                        parentPath: this.columPath + `/${this.selectColumn.value}/${menuName}`,
+                                        type: getNameExt(subMenuName),
+                                        path: this.columPath + encodeURIComponent(`/${this.selectColumn.value}/${menuName}/${subMenuName}`),
+                                        relativePath: relativePath,
+                                        index: index++
+                                    }
+                                    currentColumnMenu.sortMenus[menu.index] = menu
+                                    subMenu.push(menu);
+                                });
+                            })
+                        );
                     }
                     if (menuName.startsWith('开篇词')) {
                         errIndex = menuObj.index
@@ -505,14 +511,17 @@ new Vue({
                     if (currentSelectColumn == this.currentSelectColumn) {
                         this.menus = currentColumnMenu.menus
                     }
-                }
+                });
+
+                await Promise.all(subMenuPromises);
                 if (currentSelectColumn == this.currentSelectColumn) {
                     this.menus = currentColumnMenu.menus
                     this.sortMenus = currentColumnMenu.sortMenus
                 }
-                this.columnMenuMap[currentSelectColumn] = currentColumnMenu
-                this.renderContentByUrl()
-            })
+                this.columnMenuMap[currentSelectColumn] = currentColumnMenu;
+                this.renderContentByUrl();
+            };
+            fetchAndProcessData();
         },
         renderContentByUrl() {
             // 页面加载完成再根据url加载专栏
