@@ -187,6 +187,7 @@ new Vue({
             this.brforeSubMenu = subMenu
             // 滚动到页面顶部
             this.htmlSrcDoc = "加载中"
+            this.mdDoc = "加载中"
             this.title = subMenu.menuName
             window.scrollTo({
                 top: 0
@@ -220,6 +221,13 @@ new Vue({
                     this.mdDoc = markdownRenderer.markdown.parse(res);
                     clipboard()
                     scrollIntoView(document.querySelector('.active'))
+                    this.$nextTick(() => {
+                        const scrollY = localStorage.getItem('scrollY')
+                        if (scrollY) {
+                            window.scrollTo({ top: parseInt(scrollY) })
+                            localStorage.setItem('scrollY', 0)
+                        }
+                    })
                     // 缓存下一节
                     this.loadNextMenu()
                     this.renderStatus = true
