@@ -168,6 +168,8 @@ new Vue({
             path = menuNode.relativePath
             window.location.hash = `#${path}`
             this.renderContent(menuNode)
+            // fix
+            localStorage.setItem('scrollY', 0)
         },
         prevMenu() {
             this.prevOrNextMenu(-1)
