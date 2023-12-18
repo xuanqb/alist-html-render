@@ -7,11 +7,17 @@ new Vue({
         mdDoc: '',
         renderType: 'html',
         renderStatus: false,
-        columPath: '',
-        token: '',
-        columApiServer: '',
-        // 优先加载顺序
-        priorityOrder: 'html,md,pdf',
+        columnConfig: {
+            columPath: '',
+            columApiServer: '',
+            token: '',
+            blockStrings: '[天下无鱼][shikey.com]\n[一手资源：666java.com]\n_For_group_share\n【公众号：小谧蜂】\n✅',
+            // 优先加载顺序
+            priorityOrder: 'html,md,pdf',
+            // 并发请求限制
+            requestLimit: 1
+        },
+
         menus: [],
         urlParams: [],
         title: '',
@@ -33,7 +39,6 @@ new Vue({
         // 专栏和菜单的映射
         columnMenuMap: {},
         // 屏蔽标题中的字符串
-        blockStrings: '[天下无鱼][shikey.com]\n[一手资源：666java.com]\n_For_group_share\n【公众号：小谧蜂】\n✅',
         isDialogVisible: false
     },
     watch: {
@@ -87,13 +92,7 @@ new Vue({
             this.isDialogVisible = !this.isDialogVisible
         },
         saveSettings() {
-            const tempConfigStr = {
-                columPath: this.columPath,
-                token: this.token,
-                columApiServer: this.columApiServer,
-                priorityOrder: this.priorityOrder,
-                blockStrings: this.blockStrings
-            }
+            const tempConfigStr = this.columnConfig
             setColumnConfig(JSON.stringify(tempConfigStr))
             window.location.reload()
             this.isDialogVisible = false
@@ -111,17 +110,10 @@ new Vue({
                 this.isDialogVisible = true
                 return false
             }
+            this.columnConfig = { ...this.columnConfig, ...tempConfigJson }
             let tempColumPath = tempConfigJson['columPath']
             if (tempColumPath && !tempColumPath.startsWith('/')) tempColumPath = '/' + tempColumPath
-            this.columPath = tempColumPath
-            this.token = tempConfigJson['token']
-            this.columApiServer = tempConfigJson['columApiServer']
-            if (tempConfigJson['priorityOrder']) {
-                this.priorityOrder = tempConfigJson['priorityOrder']
-            }
-            if (tempConfigJson['blockStrings']) {
-                this.blockStrings = tempConfigJson['blockStrings']
-            }
+            this.columnConfig.columPath = tempColumPath
             return true
 
         },
@@ -261,7 +253,7 @@ new Vue({
                 } else {
                     this.menuContentMap[key] = { loaded: false, data: null }
                 }
-                const reqUrl = `${this.columApiServer}/d` + menuNode.path
+                const reqUrl = `${this.columnConfig.columApiServer}/d` + menuNode.path
                 if (menuNode.type === 'pdf') {
                     axios({
                         method: 'get',
@@ -368,12 +360,12 @@ new Vue({
         getAllColums() {
             axios({
                 method: 'post',
-                url: `${this.columApiServer}/api/fs/list`,
+                url: `${this.columnConfig.columApiServer}/api/fs/list`,
                 headers: {
-                    Authorization: this.token
+                    Authorization: this.columnConfig.token
                 },
                 data: {
-                    "path": this.columPath,
+                    "path": this.columnConfig.columPath,
                     "password": "",
                     "page": 1,
                     "per_page": 0,
@@ -426,12 +418,12 @@ new Vue({
         getFsList(path) {
             return axios({
                 method: 'post',
-                url: `${this.columApiServer}/api/fs/list`,
+                url: `${this.columnConfig.columApiServer}/api/fs/list`,
                 headers: {
-                    Authorization: this.token
+                    Authorization: this.columnConfig.token
                 },
                 data: {
-                    "path": this.columPath + path,
+                    "path": this.columnConfig.columPath + path,
                     "password": "",
                     "page": 1,
                     "per_page": 0,
@@ -476,37 +468,43 @@ new Vue({
                             type: getNameExt(menuName),
                             menuName: replaceMenuName,
                             sourceMenuName: menuName,
-                            parentPath: this.columPath + `/${this.selectColumn.value}`,
-                            path: this.columPath + encodeURIComponent(`/${this.selectColumn.value}/${menuName}`),
+                            parentPath: this.columnConfig.columPath + `/${this.selectColumn.value}`,
+                            path: this.columnConfig.columPath + encodeURIComponent(`/${this.selectColumn.value}/${menuName}`),
                             relativePath: relativePath
                         })
                         currentColumnMenu.sortMenus[menuObj.index] = menuObj
                     } else {
                         menuObj.subMenu = subMenu;
                         subMenuPromises.push(
-                            this.getFsList(`/${column}/${menuName}`).then((subRes) => {
-                                // 是否保存pdf
-                                const prioritizeFile = prioritizeFileExtensions(subRes.data.data.content?.map(o => o.name))
-                                subRes.data.data.content?.sort((a, b) => naturalSortByName(a, b))
-                                subRes.data.data.content?.forEach((subObj) => {
-                                    const subMenuName = subObj.name;
-                                    if (!subMenuName.endsWith(prioritizeFile)) return
-                                    if (excludedExtensions.some(ext => subMenuName.endsWith(ext))) return
-                                    const replaceSubMenuName = replaceName(subMenuName)
-                                    const relativePath = encodeURIComponent(`${this.selectColumn.value}/${menuName}/${replaceSubMenuName}`)
-                                    const menu = {
-                                        menuName: replaceSubMenuName,
-                                        sourceMenuName: subMenuName,
-                                        parentPath: this.columPath + `/${this.selectColumn.value}/${menuName}`,
-                                        type: getNameExt(subMenuName),
-                                        path: this.columPath + encodeURIComponent(`/${this.selectColumn.value}/${menuName}/${subMenuName}`),
-                                        relativePath: relativePath,
-                                        index: index++
-                                    }
-                                    currentColumnMenu.sortMenus[menu.index] = menu
-                                    subMenu.push(menu);
-                                });
-                            })
+                            () => {
+                                return new Promise((resolve, reject) => {
+                                    this.getFsList(`/${column}/${menuName}`).then((subRes) => {
+                                        if (!subRes.data.data) return
+                                        // 是否保存pdf
+                                        const prioritizeFile = prioritizeFileExtensions(subRes.data.data.content?.map(o => o.name))
+                                        subRes.data.data.content?.sort((a, b) => naturalSortByName(a, b))
+                                        subRes.data.data.content?.forEach((subObj) => {
+                                            const subMenuName = subObj.name;
+                                            if (!subMenuName.endsWith(prioritizeFile)) return
+                                            if (excludedExtensions.some(ext => subMenuName.endsWith(ext))) return
+                                            const replaceSubMenuName = replaceName(subMenuName)
+                                            const relativePath = encodeURIComponent(`${this.selectColumn.value}/${menuName}/${replaceSubMenuName}`)
+                                            const menu = {
+                                                menuName: replaceSubMenuName,
+                                                sourceMenuName: subMenuName,
+                                                parentPath: this.columnConfig.columPath + `/${this.selectColumn.value}/${menuName}`,
+                                                type: getNameExt(subMenuName),
+                                                path: this.columnConfig.columPath + encodeURIComponent(`/${this.selectColumn.value}/${menuName}/${subMenuName}`),
+                                                relativePath: relativePath,
+                                                index: index++
+                                            }
+                                            currentColumnMenu.sortMenus[menu.index] = menu
+                                            subMenu.push(menu);
+                                        });
+                                        resolve()
+                                    })
+                                })
+                            }
                         );
                     }
                     if (menuName.startsWith('开篇词')) {
@@ -522,8 +520,7 @@ new Vue({
                         this.menus = currentColumnMenu.menus
                     }
                 });
-
-                await Promise.all(subMenuPromises);
+                await promiseAllLimit(subMenuPromises, this.columnConfig.requestLimit)
                 if (currentSelectColumn == this.currentSelectColumn) {
                     this.menus = currentColumnMenu.menus
                     this.sortMenus = currentColumnMenu.sortMenus
@@ -565,7 +562,7 @@ let count = 0
 
 function replaceName(name) {
     if (!replaceColumnKeywords) {
-        replaceColumnKeywords = _.blockStrings.split('\n')
+        replaceColumnKeywords = _.columnConfig.blockStrings.split('\n')
     }
     for (const key in replaceColumnKeywords) {
         name = name.replace(replaceColumnKeywords[key], '')
@@ -609,7 +606,7 @@ function scrollIntoView(target) {
 function prioritizeFileExtensions(fileList) {
     if (!fileList) return null
     // 加载优先级，靠前的优先展示
-    const priorityOrder = _.priorityOrder.split(',');
+    const priorityOrder = _.columnConfig.priorityOrder.split(',');
     for (const extension of priorityOrder) {
         const matchingFile = fileList.find(file => file.endsWith(`.${extension}`));
         if (matchingFile) {
@@ -692,7 +689,7 @@ class MarkdownRenderer {
         if (href.startsWith('http')) {
             imgSrc = href;
         } else {
-            imgSrc = _.columApiServer + '/d' + _.currentMenu.parentPath + '/' + href;
+            imgSrc = _.columnConfig.columApiServer + '/d' + _.currentMenu.parentPath + '/' + href;
         }
         // onClick = "showMarkedImage(event, '${imgSrc}')"
         return `<div style="text-align: center;"><img src="${imgSrc}" onClick='showMdImage(event)'  title="${title ? title : ''}" alt="${text ? text : ''}" style="max-height:200px;"/></div>`;
@@ -745,4 +742,31 @@ const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'bas
 // 数据自然排序
 function naturalSortByName(a, b) {
     return collator.compare(a.name, b.name)
+}
+
+// 限制promiseall 数量
+async function promiseAllLimit(array, limit = 1) {
+    // 存储Promise的执行结果  
+    const ret = []
+    // 正在执行的promise
+    const executing = []
+    // 遍历待执行的函数列表
+    for (const item of array) {
+        // promise包装并执行当前待执行函数
+        const p = Promise.resolve().then(() => item())
+        // 将函数存至ret结果列表中(p此时是 Promise { <pending> })
+        ret.push(p)
+        if (limit <= array.length) {
+            // 在p.then执行的时候说明p的状态已经发生了翻转(resolve || reject),
+            // 此时将executing列表删除一个
+            p.then(() => executing.splice(0, 1))
+            // 将p存放至executing中
+            executing.push(p)
+
+            // executing内的待执行数量大于等于limit的时候，使用await Promise.race暂停for循环，
+            // executing中任意一个promise发生状态改变，就会继续循环
+            if (executing.length >= limit) await Promise.race(executing)
+        }
+    }
+    return Promise.all(ret)
 }

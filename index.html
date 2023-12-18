@@ -209,23 +209,27 @@
                     <div style="text-align: center; font-size: 2rem;height: 50px;">配置管理</div>
                     <div class="config">
                         <span class="config_key">专栏位置：</span>
-                        <input v-model="columPath" placeholder="专栏位置：如 /合集"></input>
+                        <input v-model="columnConfig.columPath" placeholder="专栏位置：如 /合集"></input>
                     </div>
                     <div class="config">
                         <span class="config_key">alistToken：</span>
-                        <input v-model="token"></input>
+                        <input v-model="columnConfig.token"></input>
                     </div>
                     <div class="config">
                         <span class="config_key">alist地址：</span>
-                        <input v-model="columApiServer" placeholder="alist地址：如 https://a.com"></input>
+                        <input v-model="columnConfig.columApiServer" placeholder="alist地址：如 https://a.com"></input>
                     </div>
                     <div class="config">
                         <span class="config_key">加载顺序：</span>
-                        <input v-model="priorityOrder"></input>
+                        <input v-model="columnConfig.priorityOrder"></input>
+                    </div>
+                    <div class="config">
+                        <span class="config_key">并发请求数量限制：</span>
+                        <input v-model="columnConfig.requestLimit" placeholder="alist如未开缓存，并发请求会触发限流，会导致目录加载异常"></input>
                     </div>
                     <div class="config">
                         <span class="config_key">屏蔽标题字符：</span>
-                        <textarea v-model="blockStrings" rows="4" placeholder="每行写一个"></textarea>
+                        <textarea v-model="columnConfig.blockStrings" rows="4" placeholder="每行写一个"></textarea>
                     </div>
                     <div class="config">
                         <span class="config_key">清除缓存</span>
@@ -238,7 +242,7 @@
                 </div>
             </div>
         </div>
-        <script src="./style/core.js?v=16"></script>
+        <script src="./style/core.js?v=17"></script>
     </div>
 </body>
 

@@ -407,6 +407,7 @@ iframe {
 .config_key {
     display: inline-block;
     width: 100px;
+    margin-right: 10px;
 }
 
 .config input,
