@@ -158,6 +158,7 @@
                     </div>
                 </div>
                 <div id="content" class="content" :class="renderType=='md'?'content-md':''">
+                    <main v-if="!initLoading.status" class="empty_main">{{initLoading.msg}}</main>
                     <main ref="mdRender" class="mdRender" v-html="mdDoc" v-if="renderType=='md'" @click="closeSidebar">
                     </main>
                     <main id="iframe-container" v-else>

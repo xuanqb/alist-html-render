@@ -168,7 +168,7 @@ h6:target::before {
 }
 
 .content a:hover {
-    /* text-decoration: underline; */
+    text-decoration: none;
 }
 
 .content img,
@@ -438,4 +438,9 @@ iframe {
 
 .config_btn span {
     margin: 0 50px;
+}
+
+.empty_main {
+    padding-left: 8px;
+    padding-top: 8px;
 }

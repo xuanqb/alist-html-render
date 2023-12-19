@@ -17,7 +17,10 @@ new Vue({
             // 并发请求限制
             requestLimit: 1
         },
-
+        initLoading: {
+            status: false,
+            msg: 'loading'
+        },
         menus: [],
         urlParams: [],
         title: '',
@@ -98,6 +101,10 @@ new Vue({
             this.isDialogVisible = false
         },
         initConfig() {
+            this.initLoading = {
+                status: false,
+                msg: '加载配置ing'
+            }
             let tempConfigStr = getColumnConfig()
             if (!tempConfigStr) {
                 this.isDialogVisible = true
@@ -170,6 +177,9 @@ new Vue({
             this.prevOrNextMenu(1)
         },
         renderContent(subMenu, event) {
+            this.initLoading = {
+                status: true
+            }
             console.log('索引', subMenu.index);
             this.currentMenu = subMenu
             this.renderPdf = false
@@ -180,8 +190,8 @@ new Vue({
             if (this.brforeSubMenu) this.brforeSubMenu.active = false
             this.brforeSubMenu = subMenu
             // 滚动到页面顶部
-            this.htmlSrcDoc = "加载中"
-            this.mdDoc = "加载中"
+            this.htmlSrcDoc = "内容加载中"
+            this.mdDoc = "内容加载中"
             this.title = subMenu.menuName
             window.scrollTo({
                 top: 0
@@ -358,6 +368,10 @@ new Vue({
         },
         // 获取所有专栏
         getAllColums() {
+            this.initLoading = {
+                status: false,
+                msg: '获取专栏列表ing'
+            }
             axios({
                 method: 'post',
                 url: `${this.columnConfig.columApiServer}/api/fs/list`,
@@ -433,6 +447,10 @@ new Vue({
         },
         // 加载目录
         loadMenus(column) {
+            this.initLoading = {
+                status: false,
+                msg: '获取当前专栏目录ing'
+            }
             let index = 0;
             this.sortMenus = {}
             this.menus = []
@@ -539,6 +557,10 @@ new Vue({
 
             if (subMenu || menu) {
                 this.renderContent(subMenu || menu, null);
+                return
+            }
+            this.initLoading = {
+                status: true
             }
         }
     },
