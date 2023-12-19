@@ -311,6 +311,11 @@ new Vue({
                 this.oldInnerWidthWidth = window.innerWidth
             }
         },
+        initConfigDone() {
+            this.initLoading = {
+                status: true
+            }
+        },
         showSelect() {
             this.$refs['multiselect'].isOpen = true
             this.showSidebar = true
@@ -321,6 +326,7 @@ new Vue({
                 const currentProgress = getCurrentProgress()
                 if (!currentProgress) {
                     this.showSelect()
+                    this.initConfigDone()
                     return
                 }
                 location.hash = currentProgress
@@ -330,6 +336,7 @@ new Vue({
                 const currentProgress = getCurrentProgress()
                 if (!currentProgress) {
                     this.showSelect()
+                    this.initConfigDone()
                     return
                 }
                 this.urlParams = currentProgress.split('/')
@@ -337,13 +344,17 @@ new Vue({
             const selectColumnValue = this.urlParams[0]
             if (!selectColumnValue) {
                 this.showSelect()
+                this.initConfigDone()
                 return
             }
             if (this.urlParams.length == 1) {
                 this.showSidebar = true
             }
             this.selectColumn = this.allColumns.find(v => v.value == selectColumnValue)
-            if (!this.selectColumn) return
+            if (!this.selectColumn) {
+                this.initConfigDone()
+                return
+            }
             this.currentSelectColumn = this.selectColumn.value
             this.loadMenus(this.selectColumn.value)
         },

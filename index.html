@@ -70,6 +70,10 @@
                 // 删除评论中的展开
                 obj.contentWindow.document.documentElement.querySelectorAll('._2r3UB1GX_0').forEach(e => e.remove())
                 obj.contentWindow.document.documentElement.querySelectorAll('[class^="CommentItem_more_"]').forEach(e => e.remove())
+                // 尝试修复部分专栏padding问题
+                if (!obj.contentWindow.document.documentElement.querySelector('._50pDbNcP_0') && obj.contentWindow.document.documentElement.querySelector('._29HP61GA_0')) {
+                    obj.contentWindow.document.documentElement.querySelectorAll('._29HP61GA_0').forEach(e => { e.style.padding = '0px 15px 0 22px' })
+                }
                 const scrollY = localStorage.getItem('scrollY')
                 if (scrollY) {
                     window.scrollTo({ top: parseInt(scrollY) })
