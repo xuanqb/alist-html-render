@@ -176,6 +176,10 @@ new Vue({
         nextMenu() {
             this.prevOrNextMenu(1)
         },
+        renderContentByMenu(subMenu, event) {
+            localStorage.setItem('scrollY', 0)
+            this.renderContent(subMenu, event)
+        },
         renderContent(subMenu, event) {
             this.initLoading = {
                 status: true
