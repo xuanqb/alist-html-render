@@ -466,7 +466,6 @@ new Vue({
                 status: false,
                 msg: '获取当前专栏目录ing'
             }
-            let index = 0;
             this.sortMenus = {}
             this.menus = []
             const currentSelectColumn = this.currentSelectColumn
@@ -497,15 +496,14 @@ new Vue({
                         const relativePath = encodeURIComponent(`${this.selectColumn.value}/${replaceMenuName}`)
                         // 是否保存pdf
                         menuObj = Object.assign({}, menuObj, {
-                            index: index++,
                             type: getNameExt(menuName),
                             menuName: replaceMenuName,
+                            active: false,
                             sourceMenuName: menuName,
                             parentPath: this.columnConfig.columPath + `/${this.selectColumn.value}`,
                             path: this.columnConfig.columPath + encodeURIComponent(`/${this.selectColumn.value}/${menuName}`),
                             relativePath: relativePath
                         })
-                        currentColumnMenu.sortMenus[menuObj.index] = menuObj
                     } else {
                         menuObj.subMenu = subMenu;
                         subMenuPromises.push(
@@ -523,15 +521,14 @@ new Vue({
                                             const replaceSubMenuName = replaceName(subMenuName)
                                             const relativePath = encodeURIComponent(`${this.selectColumn.value}/${menuName}/${replaceSubMenuName}`)
                                             const menu = {
+                                                active: false,
                                                 menuName: replaceSubMenuName,
                                                 sourceMenuName: subMenuName,
                                                 parentPath: this.columnConfig.columPath + `/${this.selectColumn.value}/${menuName}`,
                                                 type: getNameExt(subMenuName),
                                                 path: this.columnConfig.columPath + encodeURIComponent(`/${this.selectColumn.value}/${menuName}/${subMenuName}`),
-                                                relativePath: relativePath,
-                                                index: index++
+                                                relativePath: relativePath
                                             }
-                                            currentColumnMenu.sortMenus[menu.index] = menu
                                             subMenu.push(menu);
                                         });
                                         resolve()
@@ -541,10 +538,6 @@ new Vue({
                         );
                     }
                     if (menuName.startsWith('开篇词')) {
-                        errIndex = menuObj.index
-                        menuObj.index = -1
-                        delete currentColumnMenu.sortMenus[errIndex]
-                        currentColumnMenu.sortMenus[menuObj.index] = menuObj
                         currentColumnMenu.menus.unshift(menuObj)
                     } else {
                         currentColumnMenu.menus.push(menuObj);
@@ -555,6 +548,8 @@ new Vue({
                 });
                 await promiseAllLimit(subMenuPromises, this.columnConfig.requestLimit)
                 if (currentSelectColumn == this.currentSelectColumn) {
+                    // fix 排序错误
+                    currentColumnMenu.sortMenus = renumberAndFlat(currentColumnMenu.menus)
                     this.menus = currentColumnMenu.menus
                     this.sortMenus = currentColumnMenu.sortMenus
                 }
@@ -596,7 +591,6 @@ function getNameExt(filename) {
 }
 
 let count = 0
-
 function replaceName(name) {
     if (!replaceColumnKeywords) {
         replaceColumnKeywords = _.columnConfig.blockStrings.split('\n')
@@ -806,4 +800,29 @@ async function promiseAllLimit(array, limit = 1) {
         }
     }
     return Promise.all(ret)
+}
+
+// 菜单重排序和数据拍平
+function renumberAndFlat(menus) {
+    const result = {};
+    let index = 0;
+    function flatten(node) {
+        if (!node) return;
+        if (node.path) {
+            const key = index++;
+            node.index = key
+            result[key] = node
+        }
+        // 递归处理子节点
+        if (Array.isArray(node.subMenu) && node.subMenu.length > 0) {
+            node.subMenu.forEach((child) => {
+                flatten(child);
+            });
+        }
+    }
+    // 遍历树形数组并开始拍平
+    menus.forEach((node) => {
+        flatten(node);
+    });
+    return result;
 }
