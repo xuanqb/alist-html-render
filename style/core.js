@@ -146,6 +146,7 @@ new Vue({
                 localStorage.setItem(cloumuMenuProgressKey, JSON.stringify(cloumuMenuProgress))
                 // 重新触发专栏分组
                 this.columnGroup()
+                this.loadColumByUrl()
             }
         },
         getCloumuMenuProgress() {
@@ -166,7 +167,6 @@ new Vue({
             if (!menuNode) return
             path = menuNode.relativePath
             window.location.hash = `#${path}`
-            this.renderContent(menuNode)
             // fix
             localStorage.setItem('scrollY', 0)
         },
