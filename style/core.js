@@ -125,7 +125,7 @@ new Vue({
 
         },
         checkMobile() {
-            return window.innerWidth <= 800; // 根据实际情况设置移动端的宽度阈值
+            return window.innerWidth <= 1024; // 根据实际情况设置移动端的宽度阈值
         },
         // 处理 hash 变化的方法
         handleHashChange() {
