@@ -777,9 +777,9 @@ function columnGroupBy(array, keyFunction) {
         }
     })
 }
-const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 // 数据自然排序
 function naturalSortByName(a, b) {
+    const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
     return collator.compare(a.name, b.name)
 }
 
