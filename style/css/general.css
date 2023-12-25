@@ -440,6 +440,11 @@ iframe {
     margin: 0 50px;
 }
 
+.config .debug_mode {
+    width: 20px;
+    height: 10px;
+}
+
 .empty_main {
     padding-left: 8px;
     padding-top: 8px;

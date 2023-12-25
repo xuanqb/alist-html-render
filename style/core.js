@@ -15,7 +15,9 @@ new Vue({
             // 优先加载顺序
             priorityOrder: 'html,md,pdf',
             // 并发请求限制
-            requestLimit: 1
+            requestLimit: 1,
+            // 移动端调试
+            debugMode: 'close'
         },
         initLoading: {
             status: false,
@@ -121,6 +123,12 @@ new Vue({
             let tempColumPath = tempConfigJson['columPath']
             if (tempColumPath && !tempColumPath.startsWith('/')) tempColumPath = '/' + tempColumPath
             this.columnConfig.columPath = tempColumPath
+            // 移动端调试
+            if (this.columnConfig.debugMode === 'open') {
+                loadScript('https://unpkg.com/vconsole@latest/dist/vconsole.min.js', () => {
+                    var vConsole = new window.VConsole();
+                })
+            }
             return true
 
         },
@@ -825,4 +833,38 @@ function renumberAndFlat(menus) {
         flatten(node);
     });
     return result;
+}
+/**
+ * 动态加载 JavaScript 文件
+ * @param {string} url - 要加载的 JavaScript 文件的 URL
+ * @param {Function} onLoadCallback - 当脚本成功加载并执行后的回调函数
+ * @param {Function} onErrorCallback - 当加载脚本失败时的回调函数
+ * @param {boolean} async - 是否异步加载（默认为 true）
+ */
+function loadScript(url, onLoadCallback, onErrorCallback, async = true) {
+    // 创建一个新的 <script> 元素
+    var scriptElement = document.createElement('script');
+
+    // 设置其 src 属性为提供的 URL
+    scriptElement.src = url;
+
+    // 设置异步属性
+    scriptElement.async = async;
+
+    // 监听 script 的加载完成事件
+    scriptElement.onload = function () {
+        if (onLoadCallback && typeof onLoadCallback === 'function') {
+            onLoadCallback();
+        }
+    };
+
+    // 监听 script 加载失败的事件
+    scriptElement.onerror = function () {
+        if (onErrorCallback && typeof onErrorCallback === 'function') {
+            onErrorCallback();
+        }
+    };
+
+    // 将 scriptElement 添加到页面的 <head> 中
+    document.head.appendChild(scriptElement);
 }

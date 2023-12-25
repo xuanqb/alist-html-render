@@ -233,6 +233,19 @@
                         <input v-model="columnConfig.requestLimit" placeholder="alist如未开缓存，并发请求会触发限流，会导致目录加载异常"></input>
                     </div>
                     <div class="config">
+                        <span class="config_key">调试模式：</span>
+                        <div>
+                            <input type="radio" class="debug_mode" name="drone" id="open" value="open"
+                                v-model="columnConfig.debugMode"></input>
+                            <label for="open">开启</label>
+                        </div>
+                        <div>
+                            <input type="radio" class="debug_mode" name="drone" id="close" value="close"
+                                v-model="columnConfig.debugMode"></input>
+                            <label for="close">关闭</label>
+                        </div>
+                    </div>
+                    <div class="config">
                         <span class="config_key">屏蔽标题字符：</span>
                         <textarea v-model="columnConfig.blockStrings" rows="4" placeholder="每行写一个"></textarea>
                     </div>
@@ -247,7 +260,7 @@
                 </div>
             </div>
         </div>
-        <script src="./style/core.js?v=18"></script>
+        <script src="./style/core.js?v=19"></script>
     </div>
 </body>
 
