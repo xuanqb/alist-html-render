@@ -59,10 +59,16 @@ new Vue({
         if (this.initConfig()) {
             this.getAllColums();
         }
-        // this.loadMenus()
         window.addEventListener('hashchange', this.handleHashChange);
         window.addEventListener('resize', this.showOrHideSideBar);
         _ = this
+        document.addEventListener('mousedown', function (event) {
+            // 判断鼠标按钮是否是前进或后退按钮
+            if (event.button === 4) {
+                console.log('前进按钮被按下');
+                _.nextMenu()
+            }
+        });
     },
     updated() {
     },
