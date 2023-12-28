@@ -62,13 +62,15 @@ new Vue({
         window.addEventListener('hashchange', this.handleHashChange);
         window.addEventListener('resize', this.showOrHideSideBar);
         _ = this
-        document.addEventListener('mousedown', function (event) {
-            // 判断鼠标按钮是否是前进或后退按钮
-            if (event.button === 4) {
-                console.log('前进按钮被按下');
+        document.onkeydown = function (event) {
+            if (event.key == "ArrowRight" || event.keyCode == 39) {
+                // 前进
                 _.nextMenu()
+            } else if (event.key == "ArrowLeft" || event.keyCode == 37) {
+                // 后退
+                _.prevMenu()
             }
-        });
+        }
     },
     updated() {
     },
