@@ -476,6 +476,20 @@ new Vue({
                 }
             })
         },
+        getColumnContent(path) {
+            const reqUrl = `${this.columnConfig.columApiServer}/d` + this.columnConfig.columPath + path
+            return new Promise((resolve, reject) => {
+                axios({
+                    method: 'get',
+                    url: reqUrl,
+                    headers: {
+                        Authorization: this.token
+                    },
+                }).then(res => {
+                    resolve(res.data)
+                });
+            })
+        },
         // 加载目录
         loadMenus(column) {
             this.initLoading = {
@@ -499,7 +513,33 @@ new Vue({
                 if (!res.data.data.content) return
                 // 优先加载
                 const prioritizeFile = prioritizeFileExtensions(res.data.data.content?.map(o => o.name));
-                res.data.data.content.sort((a, b) => naturalSortByName(a, b))
+                let sortConfig = {
+                    // 菜单排序方式，自然排序、根据SUMMARY排序
+                    type: 'naturalSort',
+                    // SUMMARY 排序使用
+                    summarySortRule: null
+                }
+                // 优先使用SUMMARY.md中的内容排序
+                if (res.data.data.content.some(content => content.name === SUMMARY)) {
+                    let summarySortRule = {}
+                    sortConfig.type = SUMMARY
+                    sortConfig.summarySortRule = summarySortRule
+                    let sortIncr = 0
+                    // 获取大纲内容
+                    const summaryContent = await this.getColumnContent(`/${column}/${SUMMARY}`)
+                    // 一级菜单正则提取
+                    const title_1_reg = /#.* (\S.*)/g;
+                    const matches_1 = summaryContent.matchAll(title_1_reg)
+                    let mergedResults = [...matches_1].forEach(match => summarySortRule[match[1]] = sortIncr++);
+                    res.data.data.content.sort((a, b) => summarySortRule[a.name] - summarySortRule[b.name])
+                    // 二级正文标题正则提取
+                    const title_2_reg = / \* \[(\S.*)\]/g;
+                    const matches_2 = summaryContent.matchAll(title_2_reg)
+                    mergedResults = [...matches_2].forEach(match => summarySortRule[match[1]] = sortIncr++);
+                } else {
+                    res.data.data.content.sort((a, b) => naturalSortByName(a, b))
+                }
+
                 const subMenuPromises = [];
                 res.data.data.content.forEach((obj) => {
                     const subMenu = [];
@@ -529,7 +569,11 @@ new Vue({
                                         if (!subRes.data.data) return
                                         // 是否保存pdf
                                         const prioritizeFile = prioritizeFileExtensions(subRes.data.data.content?.map(o => o.name))
-                                        subRes.data.data.content?.sort((a, b) => naturalSortByName(a, b))
+                                        if (sortConfig.type === SUMMARY) {
+                                            subRes.data.data.content?.sort((a, b) => sortConfig.summarySortRule[removNameExt(a.name)] - sortConfig.summarySortRule[removNameExt(b.name)])
+                                        } else {
+                                            subRes.data.data.content?.sort((a, b) => naturalSortByName(a, b))
+                                        }
                                         subRes.data.data.content?.forEach((subObj) => {
                                             const subMenuName = subObj.name;
                                             if (!subMenuName.endsWith(prioritizeFile)) return
@@ -591,6 +635,8 @@ new Vue({
         }
     },
 });
+
+const SUMMARY = 'SUMMARY.md'
 
 const excludedExtensions = ['.mp3', '.mp4', '.m4a', 'images', 'MP3', 'videos', 'img']
 const columnViewingStatus = {

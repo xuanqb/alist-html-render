@@ -3,6 +3,8 @@
 根据文件目录结构自动生成侧边栏，自动记住多目录观看进度，支持预览`md > html > pdf`，
 支持`pwa`，markdown代码高亮，
 前端样式参考[mdbook](https://github.com/rust-lang/mdBook)实现
+# 更新记录
+**2024-02-23**：支持按照SUMMARY.md对左侧菜单排序
 # 配置
 进入网页需要在弹出框输入alist相关配置
 
