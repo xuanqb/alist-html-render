@@ -194,7 +194,8 @@ new Vue({
         },
         renderContentByMenu(subMenu, event) {
             localStorage.setItem('scrollY', 0)
-            this.renderContent(subMenu, event)
+            // fix 重复加载
+            // this.renderContent(subMenu, event)
         },
         renderContent(subMenu, event) {
             this.initLoading = {
@@ -490,6 +491,20 @@ new Vue({
                 });
             })
         },
+        // 创建排序规则
+        async createSortConfig(column, menus) {
+            let sortConfig = {
+                // 菜单排序方式，自然排序、根据SUMMARY排序
+                type: 'naturalSort',
+                // SUMMARY 排序使用
+                summarySortRule: {}
+            }
+            if (menus.some(content => content.name === SUMMARY)) {
+                sortConfig.type = SUMMARY
+                sortConfig.summarySortRule = await this.sortMenusBySummary(column)
+            }
+            return sortConfig
+        },
         // 加载目录
         loadMenus(column) {
             this.initLoading = {
@@ -513,33 +528,10 @@ new Vue({
                 if (!res.data.data.content) return
                 // 优先加载
                 const prioritizeFile = prioritizeFileExtensions(res.data.data.content?.map(o => o.name));
-                let sortConfig = {
-                    // 菜单排序方式，自然排序、根据SUMMARY排序
-                    type: 'naturalSort',
-                    // SUMMARY 排序使用
-                    summarySortRule: null
-                }
-                // 优先使用SUMMARY.md中的内容排序
-                if (res.data.data.content.some(content => content.name === SUMMARY)) {
-                    let summarySortRule = {}
-                    sortConfig.type = SUMMARY
-                    sortConfig.summarySortRule = summarySortRule
-                    let sortIncr = 0
-                    // 获取大纲内容
-                    const summaryContent = await this.getColumnContent(`/${column}/${SUMMARY}`)
-                    // 一级菜单正则提取
-                    const title_1_reg = /#.* (\S.*)/g;
-                    const matches_1 = summaryContent.matchAll(title_1_reg)
-                    let mergedResults = [...matches_1].forEach(match => summarySortRule[match[1]] = sortIncr++);
-                    res.data.data.content.sort((a, b) => summarySortRule[a.name] - summarySortRule[b.name])
-                    // 二级正文标题正则提取
-                    const title_2_reg = / \* \[(\S.*)\]/g;
-                    const matches_2 = summaryContent.matchAll(title_2_reg)
-                    mergedResults = [...matches_2].forEach(match => summarySortRule[match[1]] = sortIncr++);
-                } else {
-                    res.data.data.content.sort((a, b) => naturalSortByName(a, b))
-                }
-
+                // 创建排序规则
+                const sortConfig = await this.createSortConfig(column, res.data.data.content)
+                // 排序
+                res.data.data.content.sort((a, b) => sortMenusByConfig(a, b, sortConfig))
                 const subMenuPromises = [];
                 res.data.data.content.forEach((obj) => {
                     const subMenu = [];
@@ -569,14 +561,10 @@ new Vue({
                                         if (!subRes.data.data) return
                                         // 是否保存pdf
                                         const prioritizeFile = prioritizeFileExtensions(subRes.data.data.content?.map(o => o.name))
-                                        if (sortConfig.type === SUMMARY) {
-                                            subRes.data.data.content?.sort((a, b) => sortConfig.summarySortRule[removNameExt(a.name)] - sortConfig.summarySortRule[removNameExt(b.name)])
-                                        } else {
-                                            subRes.data.data.content?.sort((a, b) => naturalSortByName(a, b))
-                                        }
+                                        subRes.data.data.content?.sort((a, b) => sortMenusByConfig(a, b, sortConfig))
                                         subRes.data.data.content?.forEach((subObj) => {
                                             const subMenuName = subObj.name;
-                                            if (!subMenuName.endsWith(prioritizeFile)) return
+                                            if (!subMenuName.endsWith(prioritizeFile) && !subObj.is_dir) return
                                             if (excludedExtensions.some(ext => subMenuName.endsWith(ext))) return
                                             const replaceSubMenuName = replaceName(subMenuName)
                                             const relativePath = encodeURIComponent(`${this.selectColumn.value}/${menuName}/${replaceSubMenuName}`)
@@ -617,6 +605,22 @@ new Vue({
                 this.renderContentByUrl();
             };
             fetchAndProcessData();
+        },
+        // 根据summary.md 排序
+        async sortMenusBySummary(column) {
+            let summarySortRule = {}
+            let sortIncr = 0
+            // 获取大纲内容
+            const summaryContent = await this.getColumnContent(`/${column}/${SUMMARY}`)
+            // 一级菜单正则提取
+            const title_1_reg = /#.* (\S.*)/g;
+            const matches_1 = summaryContent.matchAll(title_1_reg)
+            let mergedResults = [...matches_1].forEach(match => summarySortRule[match[1]] = sortIncr++);
+            // 二级正文标题正则提取
+            const title_2_reg = / \* \[(\S.*)\]|(\* (\S.*))/g;
+            const matches_2 = summaryContent.matchAll(title_2_reg)
+            mergedResults = [...matches_2].forEach(match => summarySortRule[match[1] || match[3]] = sortIncr++);
+            return summarySortRule
         },
         renderContentByUrl() {
             // 页面加载完成再根据url加载专栏
@@ -836,6 +840,14 @@ function naturalSortByName(a, b) {
     const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
     return collator.compare(a.name, b.name)
 }
+// 根据配置排序
+function sortMenusByConfig(a, b, sortConfig) {
+    if (sortConfig.summarySortRule) {
+        return sortConfig.summarySortRule[removNameExt(a.name)] - sortConfig.summarySortRule[removNameExt(b.name)]
+    }
+    return naturalSortByName(a, b)
+}
+
 
 // 限制promiseall 数量
 async function promiseAllLimit(array, limit = 1) {
