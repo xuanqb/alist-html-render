@@ -492,7 +492,7 @@ new Vue({
                 // 菜单排序方式，自然排序、根据SUMMARY排序
                 type: 'naturalSort',
                 // SUMMARY 排序使用
-                summarySortRule: {}
+                summarySortRule: null
             }
             if (menus.some(content => content.name === SUMMARY)) {
                 sortConfig.type = SUMMARY
@@ -563,7 +563,6 @@ new Vue({
                 const res = await this.getFsList(`/${column}`);
                 currentColumnMenu = { menus: [], sortMenus: {} }
                 if (!res.data.data.content) return
-                debugger
                 // 优先加载
                 const prioritizeFile = prioritizeFileExtensions(res.data.data.content?.map(o => o.name));
                 // 创建排序规则
