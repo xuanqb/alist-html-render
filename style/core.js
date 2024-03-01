@@ -497,7 +497,7 @@ new Vue({
                 // 菜单排序方式，自然排序、根据SUMMARY排序
                 type: 'naturalSort',
                 // SUMMARY 排序使用
-                summarySortRule: {}
+                summarySortRule: null
             }
             if (menus.some(content => content.name === SUMMARY)) {
                 sortConfig.type = SUMMARY
@@ -851,7 +851,7 @@ function sortMenusByConfig(a, b, sortConfig) {
 
 // 限制promiseall 数量
 async function promiseAllLimit(array, limit = 1) {
-    // 存储Promise的执行结果  
+    // 存储Promise的执行结果
     const ret = []
     // 正在执行的promise
     const executing = []
