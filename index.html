@@ -41,6 +41,7 @@
     </script>
     <script defer src="/_vercel/insights/script.js"></script>
 
+    <script src="./components/chapter.js?v=20"></script>
 
     <script>
         // 移动端滑动右侧iframe时关闭左侧菜单栏
@@ -115,32 +116,7 @@
                     </multiselect>
                 </div>
                 <div>
-                    <ol class="chapter" v-for="item in menus" :key="item.menuName">
-                        <div v-if="item.subMenu">
-                            <li class="chapter-item" :class="item.expanded?'expanded':''"
-                                @click="item.expanded = !item.expanded">
-                                <a href="#">{{item.menuName}}</a>
-                                <a class="toggle">
-                                    <div>❱</div>
-                                </a>
-                            </li>
-                            <li>
-                                <ol class="section">
-                                    <li class="chapter-item" v-for="subMenu in item.subMenu" :key="subMenu.menuName">
-                                        <a :href="'#'+subMenu.relativePath"
-                                            @click="(event)=>renderContentByMenu(subMenu,event)"
-                                            :class="subMenu.active?'active':''">{{subMenu.menuName}}</a>
-                                    </li>
-                                </ol>
-                            </li>
-                        </div>
-                        <div v-else>
-                            <li class="chapter-item">
-                                <a :href="'#'+item.relativePath" @click="renderContentByMenu(item)"
-                                    :class="item.active?'active':''">{{item.menuName}}</a>
-                            </li>
-                        </div>
-                    </ol>
+                    <chapter :menus="menus" />
                 </div>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>

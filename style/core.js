@@ -192,11 +192,6 @@ new Vue({
         nextMenu() {
             this.prevOrNextMenu(1)
         },
-        renderContentByMenu(subMenu, event) {
-            localStorage.setItem('scrollY', 0)
-            // fix 重复加载
-            // this.renderContent(subMenu, event)
-        },
         renderContent(subMenu, event) {
             this.initLoading = {
                 status: true
@@ -505,6 +500,48 @@ new Vue({
             }
             return sortConfig
         },
+        // 创建节点
+        generateMenuObj(obj, column, subMenuPromises, sortConfig, prioritizeFile, recursiveLevel) {
+            const menuName = obj.name
+            let relativePath = `${column}/${menuName}`
+            let menuObj = { menuName: menuName, expanded: recursiveLevel < 2 ? true : false, subMenu: [] }
+            // 文件夹获取子目录并递归
+            if (obj.is_dir) {
+                subMenuPromises.push(
+                    () => {
+                        console.log(relativePath)
+                        return new Promise((resolve, reject) => {
+                            this.getFsList(`/${relativePath}`).then((subRes) => {
+                                if (!subRes.data.data) return
+                                prioritizeFile = prioritizeFileExtensions(subRes.data.data.content?.map(o => o.name));
+                                subRes.data.data.content?.sort((a, b) => sortMenusByConfig(a, b, sortConfig))
+                                subRes.data.data.content?.forEach((subObj) => {
+                                    const subMenuObj = this.generateMenuObj(subObj, relativePath, subMenuPromises, sortConfig, prioritizeFile, recursiveLevel + 1)
+                                    if (subMenuObj) {
+                                        menuObj.subMenu.push(subMenuObj);
+                                    }
+                                });
+                                resolve()
+                            })
+                        })
+                    }
+                );
+            } else {
+                if (!menuName.endsWith(prioritizeFile)) return
+                const replaceMenuName = replaceName(menuName)
+                const relativeMenuPath = encodeURIComponent(`${column}/${replaceMenuName}`)
+                return Object.assign({}, menuObj, {
+                    type: getNameExt(menuName),
+                    menuName: replaceMenuName,
+                    active: false,
+                    sourceMenuName: menuName,
+                    parentPath: this.columnConfig.columPath + `/${this.selectColumn.value}`,
+                    path: this.columnConfig.columPath + encodeURIComponent(`/${relativePath}`),
+                    relativePath: relativeMenuPath
+                })
+            }
+            return menuObj
+        },
         // 加载目录
         loadMenus(column) {
             this.initLoading = {
@@ -526,6 +563,7 @@ new Vue({
                 const res = await this.getFsList(`/${column}`);
                 currentColumnMenu = { menus: [], sortMenus: {} }
                 if (!res.data.data.content) return
+                debugger
                 // 优先加载
                 const prioritizeFile = prioritizeFileExtensions(res.data.data.content?.map(o => o.name));
                 // 创建排序规则
@@ -533,58 +571,12 @@ new Vue({
                 // 排序
                 res.data.data.content.sort((a, b) => sortMenusByConfig(a, b, sortConfig))
                 const subMenuPromises = [];
+                // 递归层级
+                let recursiveLevel = 1
                 res.data.data.content.forEach((obj) => {
-                    const subMenu = [];
                     const menuName = obj.name;
                     if (excludedExtensions.some(ext => menuName.endsWith(ext))) return
-                    let menuObj = { menuName: menuName, expanded: true }
-                    if (!obj.is_dir) {
-                        if (!menuName.endsWith(prioritizeFile)) return
-                        const replaceMenuName = replaceName(menuName)
-                        const relativePath = encodeURIComponent(`${this.selectColumn.value}/${replaceMenuName}`)
-                        // 是否保存pdf
-                        menuObj = Object.assign({}, menuObj, {
-                            type: getNameExt(menuName),
-                            menuName: replaceMenuName,
-                            active: false,
-                            sourceMenuName: menuName,
-                            parentPath: this.columnConfig.columPath + `/${this.selectColumn.value}`,
-                            path: this.columnConfig.columPath + encodeURIComponent(`/${this.selectColumn.value}/${menuName}`),
-                            relativePath: relativePath
-                        })
-                    } else {
-                        menuObj.subMenu = subMenu;
-                        subMenuPromises.push(
-                            () => {
-                                return new Promise((resolve, reject) => {
-                                    this.getFsList(`/${column}/${menuName}`).then((subRes) => {
-                                        if (!subRes.data.data) return
-                                        // 是否保存pdf
-                                        const prioritizeFile = prioritizeFileExtensions(subRes.data.data.content?.map(o => o.name))
-                                        subRes.data.data.content?.sort((a, b) => sortMenusByConfig(a, b, sortConfig))
-                                        subRes.data.data.content?.forEach((subObj) => {
-                                            const subMenuName = subObj.name;
-                                            if (!subMenuName.endsWith(prioritizeFile) && !subObj.is_dir) return
-                                            if (excludedExtensions.some(ext => subMenuName.endsWith(ext))) return
-                                            const replaceSubMenuName = replaceName(subMenuName)
-                                            const relativePath = encodeURIComponent(`${this.selectColumn.value}/${menuName}/${replaceSubMenuName}`)
-                                            const menu = {
-                                                active: false,
-                                                menuName: replaceSubMenuName,
-                                                sourceMenuName: subMenuName,
-                                                parentPath: this.columnConfig.columPath + `/${this.selectColumn.value}/${menuName}`,
-                                                type: getNameExt(subMenuName),
-                                                path: this.columnConfig.columPath + encodeURIComponent(`/${this.selectColumn.value}/${menuName}/${subMenuName}`),
-                                                relativePath: relativePath
-                                            }
-                                            subMenu.push(menu);
-                                        });
-                                        resolve()
-                                    })
-                                })
-                            }
-                        );
-                    }
+                    let menuObj = this.generateMenuObj(obj, `${column}`, subMenuPromises, sortConfig, prioritizeFile, recursiveLevel)
                     if (menuName.startsWith('开篇词')) {
                         currentColumnMenu.menus.unshift(menuObj)
                     } else {
@@ -625,13 +617,15 @@ new Vue({
         renderContentByUrl() {
             // 页面加载完成再根据url加载专栏
             // this.loadColumByUrl();
-            const [_, menuName, subMenuName] = this.urlParams;
-            const menu = this.menus.find(m => m.menuName === menuName);
-            const subMenu = menu?.subMenu?.find(s => s.menuName === subMenuName);
-
-            if (subMenu || menu) {
-                this.renderContent(subMenu || menu, null);
-                return
+            let menu, menus = this.menus;
+            for (let i = 1; i <= this.urlParams.length; i++) {
+                let tempMenus = menus.find(m => m.menuName === this.urlParams[i]);
+                if (tempMenus && (!tempMenus.subMenu || tempMenus.subMenu.length == 0)) {
+                    this.renderContent(tempMenus, null);
+                    return
+                }
+                tempMenus.expanded = true
+                menus = tempMenus.subMenu;
             }
             this.initLoading = {
                 status: true
@@ -851,29 +845,21 @@ function sortMenusByConfig(a, b, sortConfig) {
 
 // 限制promiseall 数量
 async function promiseAllLimit(array, limit = 1) {
-    // 存储Promise的执行结果  
-    const ret = []
-    // 正在执行的promise
-    const executing = []
-    // 遍历待执行的函数列表
-    for (const item of array) {
-        // promise包装并执行当前待执行函数
-        const p = Promise.resolve().then(() => item())
-        // 将函数存至ret结果列表中(p此时是 Promise { <pending> })
-        ret.push(p)
+    const ret = [];
+    const executing = [];
+    if (array.length == 0) return
+    while (array.length > 0) {
+        const item = array.shift();
+        const p = Promise.resolve().then(() => item());
+        ret.push(p);
         if (limit <= array.length) {
-            // 在p.then执行的时候说明p的状态已经发生了翻转(resolve || reject),
-            // 此时将executing列表删除一个
-            p.then(() => executing.splice(0, 1))
-            // 将p存放至executing中
-            executing.push(p)
-
-            // executing内的待执行数量大于等于limit的时候，使用await Promise.race暂停for循环，
-            // executing中任意一个promise发生状态改变，就会继续循环
-            if (executing.length >= limit) await Promise.race(executing)
+            p.then(() => executing.splice(executing.indexOf(p), 1));
+            executing.push(p);
+            if (executing.length >= limit) await Promise.race(executing);
         }
     }
-    return Promise.all(ret)
+    await Promise.all(ret);
+    await promiseAllLimit(array, limit)
 }
 
 // 菜单重排序和数据拍平
