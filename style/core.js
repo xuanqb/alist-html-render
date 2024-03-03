@@ -576,6 +576,9 @@ new Vue({
                     const menuName = obj.name;
                     if (excludedExtensions.some(ext => menuName.endsWith(ext))) return
                     let menuObj = this.generateMenuObj(obj, `${column}`, subMenuPromises, sortConfig, prioritizeFile, recursiveLevel)
+                    if (!menuObj) {
+                        return
+                    }
                     if (menuName.startsWith('开篇词')) {
                         currentColumnMenu.menus.unshift(menuObj)
                     } else {

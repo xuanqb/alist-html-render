@@ -16,7 +16,7 @@ Vue.component('chapter', {
     template: `
 <div>
     <ol class="chapter" v-for="item in menus" :key="item.menuName">
-        <div v-if="item.subMenu">
+        <div v-if="item.subMenu && item.subMenu.length>0">
             <li class="chapter-item" :class="item.expanded?'expanded':''"
                 @click="item.expanded = !item.expanded">
                 <a href="#">{{item.menuName}}</a>
