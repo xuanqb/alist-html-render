@@ -495,9 +495,10 @@ new Vue({
                 // SUMMARY 排序使用
                 summarySortRule: null
             }
-            if (menus.some(content => content.name === SUMMARY)) {
+            const summaryFile = menus.filter(content => content.name === SUMMARY)
+            if (summaryFile && summaryFile.length > 0) {
                 sortConfig.type = SUMMARY
-                sortConfig.summarySortRule = await this.sortMenusBySummary(column)
+                sortConfig.summarySortRule = await this.sortMenusBySummary(column, summaryFile[0])
             }
             return sortConfig
         },
@@ -603,11 +604,12 @@ new Vue({
             fetchAndProcessData();
         },
         // 根据summary.md 排序
-        async sortMenusBySummary(column) {
+        async sortMenusBySummary(column, summaryFile) {
+            const fileSign = summaryFile.sign ? `?sign=${summaryFile.sign}` : ''
             let summarySortRule = {}
             let sortIncr = 0
             // 获取大纲内容
-            const summaryContent = await this.getColumnContent(`/${column}/${SUMMARY}`)
+            const summaryContent = await this.getColumnContent(`/${column}/${SUMMARY}${fileSign}`)
             // 一级菜单正则提取
             const title_1_reg = /#.* (\S.*)/g;
             const matches_1 = summaryContent.matchAll(title_1_reg)
