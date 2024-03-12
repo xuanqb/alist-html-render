@@ -279,7 +279,8 @@ new Vue({
                 } else {
                     this.menuContentMap[key] = { loaded: false, data: null }
                 }
-                const reqUrl = `${this.columnConfig.columApiServer}/d` + menuNode.path
+                const fileSign = menuNode.fileSign ? `?sign=${menuNode.fileSign}` : ''
+                const reqUrl = `${this.columnConfig.columApiServer}/d` + menuNode.path + fileSign
                 if (menuNode.type === 'pdf') {
                     axios({
                         method: 'get',
@@ -537,6 +538,7 @@ new Vue({
                     sourceMenuName: menuName,
                     parentPath: this.columnConfig.columPath + `/${this.selectColumn.value}`,
                     path: this.columnConfig.columPath + encodeURIComponent(`/${relativePath}`),
+                    fileSign: obj.sign,
                     relativePath: relativeMenuPath
                 })
             }
