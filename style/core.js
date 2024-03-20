@@ -417,6 +417,10 @@ new Vue({
                 res.data.data.content?.sort((a, b) => naturalSortByName(a, b))
                 res.data.data.content?.forEach((obj) => {
                     const column = obj.name;
+                    // 过滤非文件夹
+                    if (!obj.is_dir) {
+                        return
+                    }
                     // 过滤视频课
                     if (column.indexOf('视频课') > -1) {
                         return
