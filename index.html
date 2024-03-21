@@ -53,8 +53,8 @@
         function resizeIframe(obj) {
             const view = obj.contentDocument?.querySelector('#viewer')
             if (view) {
-                obj.contentWindow.PDFViewerApplication.eventBus.on('pagesloaded', function (data) {
-                    let increaseHeight = 35
+                const resizePdfFrame = (data) => {
+                    let increaseHeight = 153
                     if (!_.checkMobile()) {
                         increaseHeight = 253
                     }
@@ -64,7 +64,10 @@
                         window.scrollTo({ top: parseInt(scrollY) })
                         localStorage.setItem('scrollY', 0)
                     }
-                });
+                }
+                obj.contentWindow.PDFViewerApplication.eventBus.on('pagesloaded', data => resizePdfFrame(data));
+                obj.contentWindow.PDFViewerApplication.eventBus.on('scalechanging', data => resizePdfFrame(data));
+
             } else {
                 obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 'px';
                 // 删除所有的 代码块的ps__rail-x
