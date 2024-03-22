@@ -643,7 +643,7 @@ ul#searchresults span.teaser em {
 .chapter li>a.toggle {
     cursor: pointer;
     display: block;
-    /* margin-inline-start: auto; */
+    margin-inline-start: auto;
     padding: 0 10px;
     user-select: none;
     opacity: 0.68;
@@ -659,7 +659,7 @@ ul#searchresults span.teaser em {
 }
 
 .chapter li.chapter-item {
-    width: 90%;
+    width: 100%;
     line-height: 1.5em;
     margin-block-start: 0.6em;
 }

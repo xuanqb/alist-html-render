@@ -722,9 +722,7 @@ function clearColumnConfig() {
 }
 
 function scrollIntoView(target) {
-    // const target = document.querySelector('.active')
     if (target) {
-        // target.scrollIntoView({ block: "end" });
         target.scrollIntoViewIfNeeded(true);
     }
 }
