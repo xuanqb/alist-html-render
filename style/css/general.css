@@ -358,8 +358,34 @@ iframe {
 .fixed-header {
     position: sticky;
     top: 0;
-    /* background-color: #fff; */
+    background-color: #FAFAFA;
     z-index: 1;
+}
+
+.header-title {
+    padding: 10px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.ht-left {
+    display: flex;
+    align-items: center;
+}
+
+.ht-right {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.header-title svg {
+    margin-right: 12px;
+}
+
+.header-title .position {
+    display: flex;
+    justify-content: center;
 }
 
 /* Dialog 蒙层样式 */

@@ -113,12 +113,54 @@
                         group-values="columns" group-label="status" :group-select="true" :max-height="500"
                         track-by="value" label="name" select-label="" deselect-label="" @input="loadColumn"
                         @open="handleSelectOpen">
-                        <!-- <template slot="singleLabel" slot-scope="{ option }">
-                            {{ option.name }}
-                        </template> -->
                     </multiselect>
+                    <div class="header-title">
+                        <span class="ht-left">
+                            <svg width="16" height="16" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg"
+                                class="larkui-icon larkui-icon-directory">
+                                <path
+                                    d="M88 40.8c5.523 0 10 4.477 10 10 0 5.43-4.327 9.848-9.72 9.996L88 60.8H65.997L66 61v47c0 5.43 4.327 9.848 9.72 9.996L76 118h11c5.523 0 10 4.477 10 10 0 5.43-4.327 9.848-9.72 9.996L87 138H76c-3.506 0-6.872-.602-10-1.707V186c0 5.43 4.327 9.848 9.72 9.996L76 196h11c5.523 0 10 4.477 10 10 0 5.43-4.327 9.848-9.72 9.996L87 216H76c-16.403 0-29.731-13.164-29.996-29.504L46 186V61l.002-.2H26c-5.523 0-10-4.477-10-10 0-5.43 4.327-9.848 9.72-9.996L26 40.8h62Zm49.983-.653 92 .353c5.523.021 9.983 4.516 9.962 10.038-.02 5.43-4.365 9.832-9.758 9.96l-.28.002-92-.354c-5.523-.02-9.983-4.515-9.962-10.038.021-5.43 4.365-9.831 9.759-9.959l.28-.002Zm0 78 92 .353c5.523.021 9.983 4.516 9.962 10.038-.02 5.43-4.365 9.832-9.758 9.96l-.28.002-92-.354c-5.523-.02-9.983-4.515-9.962-10.038.021-5.43 4.365-9.831 9.759-9.959l.28-.002Zm0 78 92 .353c5.523.021 9.983 4.516 9.962 10.038-.02 5.43-4.365 9.832-9.758 9.96l-.28.002-92-.354c-5.523-.02-9.983-4.515-9.962-10.038.021-5.43 4.365-9.831 9.759-9.959l.28-.002Z"
+                                    fill="currentColor" fill-rule="nonzero"></path>
+                            </svg>
+                            <span>目录</span>
+                        </span>
+                        <div class="ht-right">
+                            <span class="position">
+                                <span title="目录定位" @click="positionMenuNode">
+                                    <!-- 定位 -->
+                                    <svg width="1em" height="1em" viewBox="0 0 14.625 14.625"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="larkui-icon larkui-icon-directory-position BookCatalog-module_icon_7p-9h">
+                                        <path
+                                            d="M7.313 0c.345 0 .625.28.625.625v.783a5.94 5.94 0 0 1 5.28 5.279H14a.625.625 0 1 1 0 1.25l-.783.001a5.94 5.94 0 0 1-5.279 5.28V14a.625.625 0 1 1-1.25 0l-.001-.783a5.94 5.94 0 0 1-5.28-5.279H.626a.625.625 0 1 1 0-1.25l.783-.001a5.94 5.94 0 0 1 5.279-5.28V.626c0-.345.28-.625.625-.625Zm.625 2.666v1.709a.625.625 0 1 1-1.25 0V2.666a4.69 4.69 0 0 0-4.022 4.021h1.709a.625.625 0 1 1 0 1.25H2.666a4.69 4.69 0 0 0 4.021 4.022V10.25a.625.625 0 1 1 1.25 0v1.709a4.69 4.69 0 0 0 4.022-4.021H10.25a.625.625 0 1 1 0-1.25h1.709a4.69 4.69 0 0 0-4.021-4.022Z"
+                                            fill="currentColor" fill-rule="nonzero"></path>
+                                    </svg>
+                                </span>
+                                <span v-if="!globalIsExpanded" @click="foldMenus(false)" title="全部折叠">
+                                    <!-- 折叠 -->
+                                    <svg width="1em" height="1em" viewBox="0 0 256 256"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="larkui-icon larkui-icon-catalog-expand CatalogTreeCollapseTrigger-module_icon_k49Ct">
+                                        <path
+                                            d="M74.382 40.5H24.618a8.333 8.333 0 0 0-5.892 14.226l24.881 24.881a8.333 8.333 0 0 0 11.786 0l24.881-24.881A8.333 8.333 0 0 0 74.382 40.5Zm0 134H24.618a8.333 8.333 0 0 0-5.892 14.226l24.881 24.881a8.333 8.333 0 0 0 11.786 0l24.881-24.881a8.333 8.333 0 0 0-5.892-14.226ZM125 41h105c5.523 0 10 4.477 10 10s-4.477 10-10 10H125c-5.523 0-10-4.477-10-10s4.477-10 10-10Zm0 77h105c5.523 0 10 4.477 10 10s-4.477 10-10 10H125c-5.523 0-10-4.477-10-10s4.477-10 10-10Zm0 78h105c5.523 0 10 4.477 10 10s-4.477 10-10 10H125c-5.523 0-10-4.477-10-10s4.477-10 10-10Z"
+                                            fill="currentColor" fill-rule="evenodd"></path>
+                                    </svg>
+                                </span>
+                                <span v-else @click="foldMenus(true)" title="全部展开">
+                                    <!-- 展开 -->
+                                    <svg width="1em" height="1em" viewBox="0 0 256 256"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="larkui-icon larkui-icon-catalog-fold CatalogTreeCollapseTrigger-module_icon_k49Ct">
+                                        <path
+                                            d="M26 41h204c5.523 0 10 4.477 10 10s-4.477 10-10 10H26c-5.523 0-10-4.477-10-10s4.477-10 10-10Zm0 155h204c5.523 0 10 4.477 10 10s-4.477 10-10 10H26c-5.523 0-10-4.477-10-10s4.477-10 10-10Zm93-78h111c5.523 0 10 4.477 10 10s-4.477 10-10 10H119c-5.523 0-10-4.477-10-10s4.477-10 10-10ZM16.4 103.318v49.764a8.333 8.333 0 0 0 14.226 5.892l24.881-24.881a8.333 8.333 0 0 0 0-11.786L30.626 97.426a8.333 8.333 0 0 0-14.226 5.892Z"
+                                            fill="currentColor" fill-rule="evenodd"></path>
+                                    </svg>
+                                </span>
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <div>
+                <div class="menu_list_box">
                     <chapter :menus="menus" />
                 </div>
             </div>
@@ -240,7 +282,7 @@
                 </div>
             </div>
         </div>
-        <script src="./style/core.js?v=23"></script>
+        <script src="./style/core.js?v=24"></script>
     </div>
 </body>
 

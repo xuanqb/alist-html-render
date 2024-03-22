@@ -19,10 +19,10 @@ Vue.component('chapter', {
         <div v-if="item.subMenu && item.subMenu.length>0">
             <li class="chapter-item" :class="item.expanded?'expanded':''"
                 @click="item.expanded = !item.expanded">
-                <a href="#">{{item.menuName}}</a>
                 <a class="toggle">
                     <div>❱</div>
                 </a>
+                <a>{{item.menuName}}</a>
             </li>
             <li>
                 <ol class="section">

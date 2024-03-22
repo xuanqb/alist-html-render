@@ -527,8 +527,26 @@ ul#searchresults span.teaser em {
     bottom: 0;
     left: 0;
     right: 0;
-    /* padding: 10px 10px; */
-    padding: 0px 10px;
+    padding: 10px 10px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    /* padding: 0px 10px; */
+}
+
+.sidebar .menu_list_box {
+    flex: 1;
+    overflow: hidden auto;
+}
+
+.sidebar .menu_list_box::-webkit-scrollbar {
+    width: 4px !important;
+    background: transparent;
+    scrollbar-color: red !important;
+}
+
+.sidebar .menu_list_box::-webkit-scrollbar-thumb {
+    background-color: red;
 }
 
 .sidebar .sidebar-resize-handle {
@@ -594,6 +612,10 @@ ul#searchresults span.teaser em {
     line-height: 2.2em;
 }
 
+.menu_list_box {
+    margin-top: -8px;
+}
+
 .chapter ol {
     width: 100%;
 }
@@ -621,7 +643,7 @@ ul#searchresults span.teaser em {
 .chapter li>a.toggle {
     cursor: pointer;
     display: block;
-    margin-inline-start: auto;
+    /* margin-inline-start: auto; */
     padding: 0 10px;
     user-select: none;
     opacity: 0.68;
@@ -637,8 +659,16 @@ ul#searchresults span.teaser em {
 }
 
 .chapter li.chapter-item {
+    width: 90%;
     line-height: 1.5em;
     margin-block-start: 0.6em;
+}
+
+.chapter li.chapter-item a {
+    /* width: 100%; */
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .chapter li.expanded>a.toggle div {

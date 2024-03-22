@@ -44,7 +44,9 @@ new Vue({
         // 专栏和菜单的映射
         columnMenuMap: {},
         // 屏蔽标题中的字符串
-        isDialogVisible: false
+        isDialogVisible: false,
+        // 全局折叠
+        globalIsExpanded: false
     },
     watch: {
         'selectColumn.name': (n, o) => {
@@ -94,6 +96,28 @@ new Vue({
         window.removeEventListener('resize', this.showOrHideSideBar);
     },
     methods: {
+        positionMenuNode() {
+            if (this.globalIsExpanded) {
+                this.foldMenus(true)
+            }
+            this.$nextTick(() => {
+                scrollIntoView(document.querySelector('.active'))
+            })
+        },
+        // 折叠菜单
+        foldMenus(isExpanded) {
+            function fondMenu(menu) {
+                if (menu && menu.length > 0) {
+                    menu.forEach(m => fondMenu(m))
+                }
+                if (menu.subMenu && menu.subMenu.length > 0) {
+                    menu.expanded = isExpanded
+                    fondMenu(menu.subMenu)
+                }
+            }
+            this.globalIsExpanded = !this.globalIsExpanded
+            fondMenu(this.menus)
+        },
         // 清除缓存
         clearCache() {
             localStorage.removeItem(cloumuMenuProgressKey)
@@ -700,6 +724,7 @@ function clearColumnConfig() {
 function scrollIntoView(target) {
     // const target = document.querySelector('.active')
     if (target) {
+        // target.scrollIntoView({ block: "end" });
         target.scrollIntoViewIfNeeded(true);
     }
 }
