@@ -35,11 +35,17 @@
     <script src="./dependency/axios/axios.min.js"></script>
     <script src="./dependency/vue/vue@2.7.14"></script>
     <script src="./dependency/vue-multiselect/vue-multiselect.min.js"></script>
-    <!-- vercel-analytics -->
+    <!-- analytics -->
     <script>
-        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+        var _hmt = _hmt || [];
+        (function () {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?2110f5eb52027236199561cb23945a74";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();
     </script>
-    <script defer src="/_vercel/insights/script.js"></script>
+
 
     <script src="./components/chapter.js?v=20"></script>
 
