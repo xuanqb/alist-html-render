@@ -40,7 +40,7 @@
         var _hmt = _hmt || [];
         (function () {
             var hm = document.createElement("script");
-            hm.src = "https://hm.baidu.com/hm.js?2110f5eb52027236199561cb23945a74";
+            hm.src = "https://hm.baidu.com/hm.js?afac66ccdc54c909c481386a0ab4e740";
             var s = document.getElementsByTagName("script")[0];
             s.parentNode.insertBefore(hm, s);
         })();
@@ -56,6 +56,7 @@
                 _.showSidebar = false
             }
         }
+
         function resizeIframe(obj) {
             const view = obj.contentDocument?.querySelector('#viewer')
             if (view) {
@@ -83,7 +84,9 @@
                 obj.contentWindow.document.documentElement.querySelectorAll('[class^="CommentItem_more_"]').forEach(e => e.remove())
                 // 尝试修复部分专栏padding问题
                 if (!obj.contentWindow.document.documentElement.querySelector('._50pDbNcP_0') && obj.contentWindow.document.documentElement.querySelector('._29HP61GA_0')) {
-                    obj.contentWindow.document.documentElement.querySelectorAll('._29HP61GA_0').forEach(e => { e.style.padding = '0px 15px 0 22px' })
+                    obj.contentWindow.document.documentElement.querySelectorAll('._29HP61GA_0').forEach(e => {
+                        e.style.padding = '0px 15px 0 22px'
+                    })
                 }
                 const scrollY = localStorage.getItem('scrollY')
                 if (scrollY) {
@@ -99,6 +102,7 @@
             };
 
         }
+
         // 绑定滚动事件
         document.addEventListener('scroll', () => {
             localStorage.setItem('scrollY', window.scrollY)
