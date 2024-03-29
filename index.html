@@ -198,7 +198,8 @@
                     <main ref="mdRender" class="mdRender" v-html="mdDoc" v-if="renderType=='md'" @click="closeSidebar">
                     </main>
                     <main id="iframe-container" v-else>
-                        <iframe v-if="renderType=='pdf'" :src="'dependency/pdfjs/web/viewer.html?file='+pdfSrc"
+                        <iframe v-if="renderType=='pdf'"
+                            :src="'dependency/pdfjs/web/viewer.html?file='+pdfSrc+'#pagemode=none'"
                             onload="resizeIframe(this)"></iframe>
                         <iframe v-if="renderType=='html'" :srcdoc="htmlSrcDoc" frameborder="0" scrolling="no"
                             ref="htmlIframe" onload="resizeIframe(this)"></iframe>
