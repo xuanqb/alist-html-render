@@ -666,9 +666,9 @@ ul#searchresults span.teaser em {
 
 .chapter li.chapter-item a {
     /* width: 100%; */
-    text-overflow: ellipsis;
+    /* text-overflow: ellipsis;
     overflow: hidden;
-    white-space: nowrap;
+    white-space: nowrap; */
 }
 
 .chapter li.expanded>a.toggle div {
